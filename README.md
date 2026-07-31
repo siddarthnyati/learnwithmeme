@@ -4,7 +4,7 @@
 
 **→ Live demo: [siddarthnyati.github.io/learnwithmeme](https://siddarthnyati.github.io/learnwithmeme)** · **The thinking: [PRD.md](PRD.md)**
 
-A grid of authentic native-language memes — four per language across seven languages, including English, because that's the [Duolingo English Test](https://englishtest.duolingo.com/). Tap a card and it opens big; flip it for the dissection: the translation, why it lands, a cultural note, and the word and grammar bites worth keeping — explained in English or Spanish, whichever you actually speak. Deliberately nothing else: no streaks, no XP, no sign-in. A meme deck that respects your time enough to let you leave.
+A grid of authentic native-language memes — four per language across seven languages, including English, because that's the [Duolingo English Test](https://englishtest.duolingo.com/). Tap a card and it opens big; flip it for the dissection: the translation, why it lands, a cultural note, and the word and grammar bites worth keeping — explained in English or Spanish, whichever you actually speak. The main app builds the habit; this is what the habit is for.
 
 ## Why this exists
 

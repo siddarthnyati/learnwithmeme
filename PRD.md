@@ -40,7 +40,7 @@ Dissections shouldn't assume English. An "I speak" picker sets the explanation l
 
 ## Product principles
 
-1. **Non-intrusive.** No nag mechanics of any kind. The product is confident enough to let you leave.
+1. **Pull, not push.** You come to it; it doesn't come to you. The product is confident enough to let you leave and expect you back.
 2. **Culturally respectful.** The joke punches at the language quirk or the shared human moment — never at the culture as a punchline.
 3. **Warm, not preachy.** Explain the joke without embalming it. One cultural note, not a lecture.
 4. **Delight-first, not completion-first.** Success is a laugh and one word remembered, not a finished unit.
@@ -61,17 +61,17 @@ Every meme is sourced by a native curator for that language — someone who live
 
 Authentic voice matters more than volume: better six great memes than sixty average ones — one phrasebook-energy meme costs more credibility than an empty slot. Decks refresh at a cadence curators can sustain honestly, not one a content calendar demands.
 
-## Anti-features
+## What this deck leaves out (and why)
 
-Deliberate departures from the core app's mechanics, each with a reason:
+The core app builds the habit — brilliantly. This surface is what the habit is *for*, which means it needs a different set of mechanics. What's left out here isn't a critique of what's in the main app; it's calibration for a different job.
 
-- **No streaks.** The streak is the right tool for habit-building in skill acquisition. Cultural curiosity dies under obligation.
+- **No streaks here.** Streaks are the right tool for skill acquisition — that's the core app. But a joke you're obligated to laugh at isn't a joke. Cultural curiosity dies under obligation.
 - **No XP or leaderboards.** There is no "winning" at getting a joke. Competition would bend content toward what's countable.
-- **No notifications.** A product about belonging cannot nag. The meme is the retention mechanic or there isn't one.
+- **No notifications on this surface.** The main app already earns its ping. A meme deck has to be pull or it isn't the right surface.
 - **No sign-in.** Nothing here needs an identity. Friction-free is the point of a five-minute surface.
 - **No progress dashboard.** Measuring "memes learned" would turn a laugh into a chore log.
 
-The bet: for this job, pull beats push. If that bet is wrong, the metrics below will say so quickly.
+The bet: for *this* job, pull beats push. If that bet is wrong, the metrics below will say so quickly.
 
 ## Metrics that would matter
 
