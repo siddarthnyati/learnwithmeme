@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>learnwithmeme — flip a meme, learn a culture</title>
+<meta name="description" content="The meme you almost got — in the language you're learning. Open it, flip it, and get the translation, the culture, and the why-it's-funny.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    /* Duolingo's published palette — design.duolingo.com/identity/color */
+    --green: #58CC02;
+    --green-edge: #58A700;
+    --green-soft: #D7FFB8;
+    --macaw: #1CB0F6;
+    --whale: #1899D6;
+    --bee: #FFC800;
+    --fox: #FF9600;
+    --cardinal: #FF4B4B;
+    --eel: #4B4B4B;
+    --wolf: #777777;
+    --hare: #AFAFAF;
+    --swan: #E5E5E5;
+    --polar: #F7F7F7;
+    --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--polar); color: var(--eel); font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .btn-invert {
+    background: #fff;
+    color: var(--green-edge);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
+    border-radius: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: transform 0.12s var(--bounce), box-shadow 0.12s ease, filter 0.12s ease;
+  }
+  .btn-invert:hover { filter: brightness(0.97); }
+  .btn-invert:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.18); }
+  .block-card { background: #fff; border: 2px solid var(--swan); box-shadow: 0 3px 0 var(--swan); border-radius: 1.5rem; }
+  .font-display { font-family: 'Baloo 2', 'Nunito', sans-serif; }
+
+  /* ——— chunky controls (hard bottom edge + press-down) ——— */
+  .btn-primary {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--green-edge);
+    border-radius: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: transform 0.12s var(--bounce), box-shadow 0.12s ease, filter 0.12s ease;
+  }
+  .btn-primary:hover { filter: brightness(1.07); }
+  .btn-primary:active { transform: translateY(4px); box-shadow: 0 0 0 var(--green-edge); }
+  .btn-secondary {
+    background: #fff;
+    border: 2px solid var(--swan);
+    box-shadow: 0 3px 0 var(--swan);
+    border-radius: 0.875rem;
+    color: var(--wolf);
+    font-weight: 800;
+    transition: transform 0.12s var(--bounce), box-shadow 0.12s ease, background 0.12s ease;
+  }
+  .btn-secondary:hover { background: var(--polar); }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 0 0 var(--swan); }
+
+  .chip {
+    background: #fff;
+    border: 2px solid var(--swan);
+    box-shadow: 0 3px 0 var(--swan);
+    border-radius: 0.875rem;
+    color: var(--wolf);
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: transform 0.12s var(--bounce), box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  }
+  .chip:hover { transform: translateY(-1px); }
+  .chip:active { transform: translateY(3px); box-shadow: 0 0 0 var(--swan); }
+  .chip-active {
+    background: var(--green-soft);
+    border-color: var(--green-edge);
+    box-shadow: 0 3px 0 var(--green-edge);
+    color: var(--green-edge);
+  }
+  .chip-base-active {
+    background: #DDF4FF;
+    border-color: var(--whale);
+    box-shadow: 0 3px 0 var(--whale);
+    color: var(--whale);
+  }
+
+  /* ——— meme grid ——— */
+  .grid-card {
+    background: #fff;
+    border: 2px solid var(--swan);
+    box-shadow: 0 3px 0 var(--swan);
+    border-radius: 1.25rem;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.14s var(--bounce), box-shadow 0.14s ease, border-color 0.14s ease;
+  }
+  .grid-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 0 var(--green-edge); }
+  .grid-card:active { transform: translateY(2px); box-shadow: 0 0 0 var(--swan); }
+
+  /* ——— the flip ——— */
+  .scene { perspective: 1400px; }
+  .card-inner {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.65s cubic-bezier(0.34, 1.15, 0.4, 1), height 0.65s cubic-bezier(0.34, 1.15, 0.4, 1);
+  }
+  .card-inner.no-anim { transition: none; }
+  .card-inner.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: #fff;
+    border: 2px solid var(--swan);
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 0 var(--swan);
+  }
+  .card-front { display: flex; flex-direction: column; }
+  .card-back { transform: rotateY(180deg); }
+
+  .art-panel { border-radius: 1rem; overflow: hidden; }
+  .art-panel svg { display: block; width: 100%; height: auto; }
+  .emoji-art { aspect-ratio: 320 / 140; display: flex; align-items: center; justify-content: center; gap: 1.25rem; }
+
+  /* ——— tiny animations (the memes should move a little) ——— */
+  @keyframes svbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes svpop { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes ewig { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg); } }
+  svg .sv-bob { transform-box: fill-box; transform-origin: center; animation: svbob 3s ease-in-out infinite; }
+  svg .sv-pop { transform-box: fill-box; transform-origin: center; animation: svpop 0.45s var(--bounce) backwards; }
+  .e-bob { display: inline-block; animation: svbob 2.4s ease-in-out infinite; }
+  .e-wig { display: inline-block; animation: ewig 2.8s ease-in-out infinite; }
+
+  /* ——— modal ——— */
+  #overlay { background: rgba(75, 75, 75, 0.45); }
+  .modal-pop { animation: mpop 0.35s var(--bounce); }
+  @keyframes mpop { from { transform: scale(0.92); opacity: 0; } }
+
+  /* ——— the wobbly underline (the one visual signature) ——— */
+  .squiggle-h { display: block; height: 0.6rem; margin-top: 0.15rem; }
+
+  .sticker {
+    transform: rotate(3.5deg);
+    background: #FFF5D3;
+    border: 2px solid #FBE56D;
+    box-shadow: 0 2px 0 #FBE56D;
+  }
+
+  .microlabel {
+    font-weight: 800;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .confetti-bit { position: absolute; border-radius: 9999px; pointer-events: none; z-index: 60; }
+
+  button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
+    outline: 2.5px solid var(--macaw);
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .card-inner { transition: none; }
+    svg .sv-bob, svg .sv-pop, .e-bob, .e-wig { animation: none; }
+    .modal-pop { animation: none; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ——— hero (full-bleed Feather Green, per Duolingo's marketing blocks) ——— -->
+<header class="w-full" style="background: var(--green)">
+  <div class="max-w-3xl mx-auto px-6 pt-14 md:pt-20 pb-14 text-center">
+    <p class="font-display font-bold text-2xl tracking-tight text-white">
+      learnwith<span class="relative inline-block" style="color: var(--bee)">meme<svg class="absolute left-0 -bottom-1.5 w-full h-2" viewBox="0 0 200 14" fill="none" preserveAspectRatio="none" aria-hidden="true"><path d="M3 9 C 32 3, 62 12, 98 7 S 165 3, 197 8" stroke="#FFC800" stroke-width="6" stroke-linecap="round"/></svg></span>
+    </p>
+    <h1 class="mt-8 font-display font-bold text-5xl md:text-6xl leading-none tracking-tight text-white">the meme you<br>almost got</h1>
+    <p class="mt-5 text-lg md:text-xl font-semibold leading-relaxed text-white/95">…in the language you're learning. Open it, flip it, and get the translation, the culture, and the why-it's-funny — explained in your language.</p>
+    <a href="#memes" class="btn-invert inline-block mt-8 px-8 py-3.5 text-sm">Show me the memes</a>
+  </div>
+</header>
+
+<!-- ——— the deck ——— -->
+<main id="memes" class="max-w-4xl mx-auto px-4 md:px-6 pt-6 pb-16">
+
+  <!-- base language -->
+  <div class="flex items-center justify-center gap-2.5 mb-4">
+    <span class="microlabel" style="color: var(--hare)">I speak</span>
+    <div id="base-tabs" class="flex gap-2"></div>
+  </div>
+
+  <!-- target language chips -->
+  <div id="chips" class="flex flex-wrap justify-center gap-2.5 mb-8" role="tablist" aria-label="Choose a language to learn"></div>
+
+  <!-- meme grid -->
+  <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto"></div>
+
+  <p id="grid-hint" class="text-center text-xs font-semibold mt-7" style="color: var(--hare)"></p>
+</main>
+
+<!-- ——— how this works ——— -->
+<section class="max-w-3xl mx-auto px-4 md:px-6 pb-10">
+  <div class="block-card px-6 md:px-10 py-10">
+  <h2 class="font-display font-bold text-3xl tracking-tight" style="color: var(--green)">how this works<svg class="squiggle-h w-24" viewBox="0 0 200 14" fill="none" aria-hidden="true"><path d="M3 9 C 32 3, 62 12, 98 7 S 165 3, 197 8" stroke="#58CC02" stroke-width="6" stroke-linecap="round"/></svg></h2>
+  <div class="mt-8 grid gap-8 md:grid-cols-3 text-[15px] leading-relaxed font-semibold">
+    <div>
+      <h3 class="font-display font-bold text-lg mb-1.5">front</h3>
+      <p style="color: var(--wolf)">A grid of memes, as they live in the wild — native script, no hand-holding. Tap one to open it big.</p>
+    </div>
+    <div>
+      <h3 class="font-display font-bold text-lg mb-1.5">flip</h3>
+      <p style="color: var(--wolf)">The translation, the cultural context, the why-it's-funny, and the little linguistic building blocks worth taking with you — in English or Spanish, your pick.</p>
+    </div>
+    <div>
+      <h3 class="font-display font-bold text-lg mb-1.5">that's it</h3>
+      <p style="color: var(--wolf)">No streaks, no XP, no daily reminders. Come back when you want a meme. Leave when you've had one.</p>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- ——— why I built this ——— -->
+<section class="max-w-3xl mx-auto px-4 md:px-6 pb-14">
+  <div class="block-card px-6 md:px-10 py-10">
+  <h2 class="font-display font-bold text-3xl tracking-tight" style="color: var(--green)">why I built this<svg class="squiggle-h w-24" viewBox="0 0 200 14" fill="none" aria-hidden="true"><path d="M3 9 C 32 3, 62 12, 98 7 S 165 3, 197 8" stroke="#58CC02" stroke-width="6" stroke-linecap="round"/></svg></h2>
+  <div class="mt-6 space-y-4 text-[15px] leading-relaxed font-semibold max-w-xl">
+    <p>I'm applying for the Senior PM role on the Duolingo English Test, and I wanted to show up with something more honest than a slide deck. Duolingo is world-class at teaching you the language. This is a sketch of the surface that teaches you the people — the shared jokes that make you feel like you belong in a language, not just study it.</p>
+    <p>Seven languages — including English, because that's the DET — four memes each, dissected in the language you already speak. Nothing that nags you. The full thinking — content strategy, anti-features, risks, rollout — is in the <a href="https://github.com/siddarthnyati/learnwithmeme/blob/main/PRD.md" class="font-bold underline decoration-2 underline-offset-2" style="color: var(--green-edge)">PRD</a>.</p>
+  </div>
+  </div>
+</section>
+
+<!-- ——— footer (Eel, like theirs) ——— -->
+<footer class="w-full" style="background: var(--eel)">
+  <div class="max-w-3xl mx-auto px-6 py-10 text-sm font-semibold" style="color: var(--hare)">
+    <p>Made by Siddarth Nyati, applying for Senior PM, DET at Duolingo. Not affiliated with Duolingo (yet). The characters here are original — Duolingo's own cast stays theirs.</p>
+    <p class="mt-3"><a href="https://github.com/siddarthnyati/learnwithmeme/blob/main/PRD.md" class="underline underline-offset-2 text-white/90">PRD</a> &nbsp;·&nbsp; <a href="https://github.com/siddarthnyati/learnwithmeme" class="underline underline-offset-2 text-white/90">GitHub</a></p>
+  </div>
+</footer>
+
+<!-- ——— modal ——— -->
+<div id="overlay" class="fixed inset-0 z-40 hidden items-center justify-center p-3 md:p-6">
+  <div class="modal-pop w-full max-w-[880px] flex flex-col items-center gap-4">
+    <div class="w-full max-w-[480px] flex justify-end">
+      <button id="modal-close" aria-label="Close" class="btn-secondary flex items-center justify-center w-11 h-11 text-lg">✕</button>
+    </div>
+    <div class="flex flex-col items-center gap-5 md:flex-row md:justify-center md:gap-7 w-full">
+      <button data-nav="prev" aria-label="Previous meme" class="btn-secondary hidden md:flex items-center justify-center w-14 h-12 text-xl shrink-0">←</button>
+
+      <div class="scene relative w-full max-w-[480px]">
+        <div id="sticker" class="sticker microlabel absolute -top-3 -right-2 z-20 px-2.5 py-1 rounded-lg" style="color: var(--eel)"></div>
+
+        <div id="card" class="card-inner cursor-pointer select-none" role="button" tabindex="0" aria-label="Meme card — press Enter or Space to flip">
+          <!-- front -->
+          <div class="card-face card-front p-6 md:p-7">
+            <div class="microlabel flex items-center gap-2" style="color: var(--wolf)">
+              <span id="front-flag" class="text-lg"></span>
+              <span id="front-lang"></span>
+            </div>
+            <div id="front-art" class="mt-4" aria-hidden="true"></div>
+            <div class="flex-1 flex flex-col justify-center py-5">
+              <div id="front-text" class="text-[1.35rem] leading-snug font-bold whitespace-pre-line"></div>
+              <div id="front-roman" class="mt-3 text-sm italic font-normal" style="color: var(--wolf)"></div>
+            </div>
+            <div id="hint-flip" class="microlabel text-right" style="color: var(--hare)"></div>
+          </div>
+
+          <!-- back -->
+          <div id="card-back" class="card-back card-face p-6 md:p-7">
+            <div class="microlabel flex items-center justify-between mb-5" style="color: var(--wolf)">
+              <span class="flex items-center gap-2"><span id="back-flag" class="text-lg"></span><span id="back-title"></span></span>
+              <span id="back-langs" class="flex gap-1.5"></span>
+            </div>
+
+            <div class="space-y-5 text-[15px] leading-relaxed font-semibold">
+              <section>
+                <h3 id="lbl-t" class="microlabel mb-1" style="color: var(--green-edge)"></h3>
+                <p id="back-translation" class="font-bold"></p>
+              </section>
+              <section>
+                <h3 id="lbl-w" class="microlabel mb-1" style="color: var(--green-edge)"></h3>
+                <p id="back-why"></p>
+              </section>
+              <section>
+                <h3 id="lbl-c" class="microlabel mb-1" style="color: var(--green-edge)"></h3>
+                <p id="back-culture"></p>
+              </section>
+              <section>
+                <h3 id="lbl-wb" class="microlabel mb-2" style="color: var(--green-edge)"></h3>
+                <div id="back-bites" class="flex flex-wrap gap-1.5"></div>
+              </section>
+              <section>
+                <h3 id="back-bite-label" class="microlabel mb-1" style="color: var(--green-edge)"></h3>
+                <p id="back-bite"></p>
+              </section>
+            </div>
+
+            <div id="hint-back" class="microlabel text-right mt-5" style="color: var(--hare)"></div>
+          </div>
+        </div>
+      </div>
+
+      <button data-nav="next" aria-label="Next meme" class="btn-secondary hidden md:flex items-center justify-center w-14 h-12 text-xl shrink-0">→</button>
+    </div>
+
+    <div class="flex md:hidden gap-4">
+      <button data-nav="prev" aria-label="Previous meme" class="btn-secondary flex items-center justify-center w-16 h-12 text-xl">←</button>
+      <button data-nav="next" aria-label="Next meme" class="btn-secondary flex items-center justify-center w-16 h-12 text-xl">→</button>
+    </div>
+
+    <p id="modal-hint" class="text-center text-xs font-semibold" style="color: #F7F7F7"></p>
+  </div>
+</div>
+
+<script>
+/* ————— UI strings per base language ————— */
+const STR = {
+  en: {
+    flagLabel: "🇺🇸", tabLabel: "English",
+    dissection: "the dissection", t: "Translation", w: "Why it lands", c: "Cultural note",
+    wb: "Word bites", g: "Grammar bite", a: "Alphabet bite",
+    flip: "tap to flip ↻", back: "flip back ↻", open: "tap to open",
+    meme: (i, n) => `meme ${i} of ${n}`,
+    hint: "tap a card to open it big",
+    modalHint: "← → to browse · space to flip · esc to close"
+  },
+  es: {
+    flagLabel: "🇲🇽", tabLabel: "Español",
+    dissection: "la disección", t: "Traducción", w: "Por qué pega", c: "Nota cultural",
+    wb: "Palabras clave", g: "Gramática exprés", a: "Alfabeto exprés",
+    flip: "toca para girar ↻", back: "gira de vuelta ↻", open: "toca para abrir",
+    meme: (i, n) => `meme ${i} de ${n}`,
+    hint: "toca una tarjeta para abrirla en grande",
+    modalHint: "← → para navegar · espacio para girar · esc para cerrar"
+  }
+};
+
+/* ————— the decks —————
+   d.en / d.es = the dissection in that base language.
+   The Spanish deck only needs English (it hides for Spanish speakers),
+   the English deck only needs Spanish (same logic, mirrored). ————— */
+const DECKS = [
+  {
+    code: "es", langTag: "es-MX", flag: "🇲🇽", name: { en: "Spanish", es: "Español" },
+    panel: "#FFE3C9", shadow: "#F0C9A4",
+    cards: [
+      {
+        scene: "es",
+        front: "Cuando te dicen:\n«llegamos en 5 minutos»",
+        d: { en: {
+          t: "When they tell you: “we'll be there in 5 minutes.”",
+          w: "In Mexico, “5 minutos” is famously not a unit of time — it's a vibe. Everyone has sent it; everyone has believed it exactly once. The joke needs no punchline, because the reader supplies their own flaky friend.",
+          c: "“La hora mexicana” — arrival times are ranges, not points. Nobody's offended, and showing up scandalously early is arguably the ruder move.",
+          bites: [["cuando", "when"], ["te dicen", "they tell you"], ["llegamos", "we arrive"], ["en cinco minutos", "in five minutes"]],
+          bl: "g",
+          b: "“Dicen” is the impersonal they — third-person plural of decir with no subject in sight. Spanish leans on it constantly: dicen que, se dice… You'll hear it daily."
+        } }
+      },
+      {
+        scene: "es2", small: true,
+        front: "—¿Cuándo?\n—Ahorita.\n(ahorita: ahora · al rato · mañana · nunca)",
+        d: { en: {
+          t: "“When?” “Ahorita.” (ahorita: now · in a bit · tomorrow · never)",
+          w: "“Ahorita” is the diminutive of now, and somehow that makes it mean anything except now. Its actual value is set by tone, context, and forces science hasn't named.",
+          c: "So elastic that “¿ahorita cuándo?” — ahorita when? — is a legitimate follow-up question. Nobody finds it strange.",
+          bites: [["ahorita", "now-ish (results may vary)"], ["ahora", "now"], ["al rato", "in a while"], ["nunca", "never"]],
+          bl: "g",
+          b: "The -ita ending is the diminutive — it normally shrinks things (casa → casita). Stuck onto “ahora,” it shrinks the commitment instead of the time."
+        } }
+      },
+      {
+        scene: "es3", small: true,
+        front: "«No pica»\n— las últimas palabras famosas de todas las cocinas de México",
+        d: { en: {
+          t: "“It's not spicy” — famous last words of every kitchen in Mexico.",
+          w: "It always pica. Everyone knows it pica. “No pica” is less a description than a dare, and whoever believes it becomes the afternoon's entertainment.",
+          c: "Offering chile is hospitality and a small test at once — you're loved either way, but your tolerance will be discussed.",
+          bites: [["picar", "to be spicy (lit. to sting)"], ["el chile", "chili"], ["las últimas palabras", "last words"], ["la cocina", "kitchen"]],
+          bl: "g",
+          b: "Spanish makes spiciness a verb, not an adjective: the food itself “stings” — pica. One verb, no “is,” maximum betrayal."
+        } }
+      },
+      {
+        scene: "es4", small: true,
+        front: "Un cafecito. Un taquito. Un momentito.\nNada es pequeño: todo es cariño.",
+        d: { en: {
+          t: "A little coffee. A little taco. A little moment. Nothing is actually small: everything is affection.",
+          w: "Nothing shrinks with -ito — it warms up. A “cafecito” lasts two hours and includes your whole life story. Learners who catch this stop sounding like textbooks overnight.",
+          c: "The diminutive also softens asks: “un favorcito” is much harder to refuse than un favor. Mexican Spanish runs on it.",
+          bites: [["el cafecito", "a coffee, with love"], ["el taquito", "a taco, affectionately"], ["el momentito", "a “tiny” moment (unbounded)"], ["el cariño", "affection"]],
+          bl: "g",
+          b: "-ito / -ita attaches to almost any noun; short words add a bridge: café → cafecito. Grammatically diminutive, semantically a hug."
+        } }
+      }
+    ]
+  },
+  {
+    code: "fr", langTag: "fr-FR", flag: "🇫🇷", name: { en: "French", es: "Francés" },
+    panel: "#DDF4FF", shadow: "#B6DAF5",
+    cards: [
+      {
+        scene: "fr", small: true,
+        front: "Personne :\nAbsolument personne :\nUn Français, toutes les 30 secondes : « du coup »",
+        d: {
+          en: {
+            t: "Nobody: / Absolutely nobody: / A French person, every 30 seconds: “du coup.”",
+            w: "“Du coup” technically means “as a result.” In practice it's verbal punctuation — it opens sentences, fills silences, and connects thoughts with no logical connection whatsoever. The French meme their own addiction to it relentlessly.",
+            c: "The tic is so widespread that linguists write grumpy columns about it, which changes nothing. Dropping a casual “du coup” is one of the fastest ways to sound like you actually live in French, not just study it.",
+            bites: [["du coup", "so / as a result — the national filler"], ["personne", "nobody"], ["toutes les 30 secondes", "every 30 seconds"], ["un Français", "a French person"]],
+            bl: "g",
+            b: "“Personne” means both a person (une personne) and nobody (personne ne…). Same word, opposite jobs — the article and the ne are doing the disambiguation."
+          },
+          es: {
+            t: "Nadie: / Absolutamente nadie: / Un francés, cada 30 segundos: «du coup».",
+            w: "«Du coup» significa, en teoría, “como resultado”. En la práctica es puntuación hablada: abre frases, llena silencios y conecta ideas sin ninguna lógica entre sí. Los franceses se memean su propia adicción sin piedad.",
+            c: "La muletilla es tan universal que los lingüistas escriben columnas indignadas — y no cambia nada. Soltar un «du coup» casual es de las formas más rápidas de sonar local y no de libro de texto.",
+            bites: [["du coup", "o sea / total — la muletilla nacional"], ["personne", "nadie"], ["toutes les 30 secondes", "cada 30 segundos"], ["un Français", "un francés"]],
+            bl: "g",
+            b: "«Personne» es persona (une personne) y también nadie (personne ne…). La misma palabra con empleos opuestos: el artículo y el ne hacen todo el trabajo."
+          }
+        }
+      },
+      {
+        scene: "fr2", small: true,
+        front: "Le nombre de bises selon la région :\n1, 2, 3, 4…\nPersonne ne sait. Même pas nous.",
+        d: {
+          en: {
+            t: "The number of cheek kisses, by region: 1, 2, 3, 4… Nobody knows. Not even us.",
+            w: "France has no agreed bise protocol — Paris says two, chunks of the south say three, pockets insist on four. Every first greeting is a small probability game played near a stranger's face.",
+            c: "This is genuinely crowdsourced: there are real maps where the French vote on kiss-count by département. The confusion is the tradition.",
+            bites: [["la bise", "the cheek kiss"], ["selon", "according to"], ["la région", "the region"], ["personne ne sait", "nobody knows"]],
+            bl: "g",
+            b: "«Même pas nous» — “not even us.” «Même pas» is the two-word French shrug: même pas peur (not even scared), même pas mal (didn't even hurt)."
+          },
+          es: {
+            t: "El número de besos según la región: 1, 2, 3, 4… Nadie sabe. Ni siquiera nosotros.",
+            w: "Francia no tiene protocolo oficial de bise: París dice dos, el sur dice tres, hay zonas de cuatro. Cada primer saludo es un pequeño juego de azar junto a la cara de un desconocido.",
+            c: "Esto es literalmente colaborativo: existen mapas reales donde los franceses votan cuántos besos se dan por región. La confusión es la tradición.",
+            bites: [["la bise", "el beso en la mejilla"], ["selon", "según"], ["la région", "la región"], ["personne ne sait", "nadie sabe"]],
+            bl: "g",
+            b: "«Même pas nous» — “ni siquiera nosotros”. «Même pas» es el encogimiento de hombros francés en dos palabras: même pas peur (ni miedo me da), même pas mal (ni me dolió)."
+          }
+        }
+      },
+      {
+        scene: "fr3", small: true,
+        front: "18h47 : « On reste juste pour l'apéro »\n23h52 : toujours à l'apéro",
+        d: {
+          en: {
+            t: "6:47 PM: “We're just staying for the apéro.” 11:52 PM: still at the apéro.",
+            w: "The apéro is technically the drink before dinner. In practice it's a self-sufficient lifestyle that regularly swallows dinner whole — «apéro dînatoire» exists precisely so nobody has to admit it.",
+            c: "Refusing an apéro is harder than refusing dinner. Requirements: saucisson, olives, and the phrase «allez, un dernier» (come on, one last one) repeated four times.",
+            bites: [["l'apéro", "pre-dinner drinks, sacred"], ["on reste", "we're staying"], ["juste", "just (allegedly)"], ["toujours", "still / always"]],
+            bl: "g",
+            b: "«Toujours» means both “always” and “still” — at 11:52 PM, context tells you it's “still.” French leaves the ambiguity in and trusts the clock."
+          },
+          es: {
+            t: "18:47: «Nos quedamos solo al apéro». 23:52: seguimos en el apéro.",
+            w: "El apéro es, en teoría, la copa antes de cenar. En la práctica es un estilo de vida autosuficiente que con frecuencia se traga la cena entera: existe el «apéro dînatoire» precisamente para no tener que admitirlo.",
+            c: "Rechazar un apéro es más difícil que rechazar una cena. Requisitos: saucisson, aceitunas y la frase «allez, un dernier» (va, la última) repetida cuatro veces.",
+            bites: [["l'apéro", "la copa previa a la cena (sagrada)"], ["on reste", "nos quedamos"], ["juste", "solo (supuestamente)"], ["toujours", "todavía / siempre"]],
+            bl: "g",
+            b: "«Toujours» significa “siempre” y también “todavía”: a las 23:52, el contexto te dice cuál es. El francés deja la ambigüedad ahí y confía en el reloj."
+          }
+        }
+      },
+      {
+        scene: "fr4", small: true,
+        front: "Échelle émotionnelle française :\nbof — ça va — pas mal — incroyable\n(le dernier : jamais utilisé)",
+        d: {
+          en: {
+            t: "The French emotional scale: bof — it's fine — not bad — incredible. (That last one: never used.)",
+            w: "French praise runs on understatement: «pas mal» — not bad — is a genuine compliment, and open enthusiasm is treated with suspicion. The scale simply tops out early.",
+            c: "It's calibration, not negativity: superlatives are saved for what truly earns them, so a «pas mal du tout» from a French person belongs in a frame.",
+            bites: [["bof", "meh (untranslatable shrug)"], ["ça va", "it's fine / how are you / I'm fine"], ["pas mal", "not bad = high praise"], ["incroyable", "incredible (theoretical)"]],
+            bl: "g",
+            b: "«Bof» is an interjection with no grammar at all — one syllable doing the work of an entire Gallic shrug. No two dictionaries define it the same way, which is very bof of it."
+          },
+          es: {
+            t: "Escala emocional francesa: bof — va bien — no está mal — increíble. (La última: jamás se usa.)",
+            w: "El elogio francés funciona por understatement: «pas mal» — no está mal — es un cumplido de verdad, y el entusiasmo abierto genera sospechas. La escala simplemente se acaba antes de llegar arriba.",
+            c: "No es negatividad, es calibración: los superlativos se reservan para lo que de verdad los merece. Un «pas mal du tout» de un francés se enmarca.",
+            bites: [["bof", "meh (encogimiento intraducible)"], ["ça va", "va bien / ¿qué tal? / estoy bien"], ["pas mal", "no está mal = elogio serio"], ["incroyable", "increíble (teórico)"]],
+            bl: "g",
+            b: "«Bof» es una interjección sin gramática: una sílaba haciendo el trabajo de un hombro encogido entero. Ningún diccionario la define igual — muy bof de su parte."
+          }
+        }
+      }
+    ]
+  },
+  {
+    code: "ja", langTag: "ja", flag: "🇯🇵", name: { en: "Japanese", es: "Japonés" },
+    panel: "#FFDFE0", shadow: "#F5BFCB",
+    cards: [
+      {
+        scene: "ja",
+        front: "【行けたら行く】\n意味：行かない",
+        roman: "“iketara iku” — imi: ikanai",
+        d: {
+          en: {
+            t: "“I'll come if I can” — definition: not coming.",
+            w: "A dictionary-entry parody of Japan's most beloved soft no. Everyone says it, everyone decodes it instantly, and nobody is fooled. The humor is in finally writing down what the phrase has always meant.",
+            c: "Japanese conversation prizes harmony over bluntness — honne (what you feel) vs. tatemae (what you say). “Iketara iku” lets both sides keep face. The business version is 検討します: “we'll consider it.” They will not.",
+            bites: [["行く · iku", "to go"], ["行けたら · iketara", "if I can go"], ["意味 · imi", "meaning"], ["行かない · ikanai", "won't go"]],
+            bl: "a",
+            b: "The kanji 行 appears three times, always read i-. The hiragana tails (けたら, く, かない) carry all the grammar. Spot the kanji root, then let the hiragana tell you what it's doing."
+          },
+          es: {
+            t: "«Voy si puedo» — definición: no voy.",
+            w: "Parodia de entrada de diccionario del “no” suave más querido de Japón. Todos lo dicen, todos lo decodifican al instante y nadie se engaña: la gracia está en por fin escribir lo que siempre significó.",
+            c: "La conversación japonesa prioriza la armonía sobre la franqueza: honne (lo que sientes) vs. tatemae (lo que dices). «Iketara iku» deja a ambos quedar bien. La versión de oficina es 検討します: “lo consideraremos”. No lo considerarán.",
+            bites: [["行く · iku", "ir"], ["行けたら · iketara", "si puedo ir"], ["意味 · imi", "significado"], ["行かない · ikanai", "no voy"]],
+            bl: "a",
+            b: "El kanji 行 aparece tres veces y siempre se lee i-. Las colas en hiragana (けたら, く, かない) llevan toda la gramática: ubica la raíz kanji y deja que el hiragana te diga qué está haciendo."
+          }
+        }
+      },
+      {
+        scene: "ja2", small: true,
+        front: "「大丈夫です」\n意味①：はい\n意味②：いいえ",
+        roman: "daijōbu desu — imi ①: hai / imi ②: iie",
+        d: {
+          en: {
+            t: "“I'm fine.” Meaning #1: yes. Meaning #2: no.",
+            w: "Daijōbu is the politeness Swiss Army knife: offered a bag at the konbini, it means no thanks; asked if you're hurt, it means I'm okay. The listener computes which — instantly, from context.",
+            c: "The ambiguity is the feature: it lets refusals land soft. Convenience-store clerks navigate it a hundred times a day without blinking.",
+            bites: [["大丈夫 · daijōbu", "okay / fine / no thanks"], ["意味 · imi", "meaning"], ["はい · hai", "yes"], ["いいえ · iie", "no"]],
+            bl: "a",
+            b: "大丈夫 stacks three kanji: 大 (big) + 丈 (sturdy) + 夫 (man) — “a big sturdy man,” which somehow became “all good.” Kanji etymology is a mnemonic goldmine."
+          },
+          es: {
+            t: "«Estoy bien». Significado ①: sí. Significado ②: no.",
+            w: "Daijōbu es la navaja suiza de la cortesía: si te ofrecen bolsa en el konbini, significa “no, gracias”; si preguntan si te lastimaste, significa “estoy bien”. El oyente calcula cuál al instante, por contexto.",
+            c: "La ambigüedad es la gracia: permite que los rechazos aterricen suave. Los dependientes del konbini la navegan cien veces al día sin pestañear.",
+            bites: [["大丈夫 · daijōbu", "bien / ok / no gracias"], ["意味 · imi", "significado"], ["はい · hai", "sí"], ["いいえ · iie", "no"]],
+            bl: "a",
+            b: "大丈夫 apila tres kanji: 大 (grande) + 丈 (firme) + 夫 (hombre) — “un hombre grande y firme”, que de algún modo terminó en “todo bien”. La etimología kanji es oro mnemotécnico."
+          }
+        }
+      },
+      {
+        scene: "ja3", small: true,
+        front: "会社のあいさつ：\n朝「おつかれさまです」\n昼「おつかれさまです」\n夜「おつかれさまです」",
+        roman: "kaisha no aisatsu — asa, hiru, yoru: otsukaresama desu",
+        d: {
+          en: {
+            t: "Office greetings — morning: “you must be tired.” Noon: “you must be tired.” Night: “you must be tired.”",
+            w: "Otsukaresama literally honors someone's fatigue — and it's the all-purpose workplace greeting at any hour, including 9:02 AM, when nobody has done anything yet.",
+            c: "It acknowledges effort rather than describing reality: hello, goodbye, thank you, and Slack punctuation, all in one bow-shaped word.",
+            bites: [["おつかれさま · otsukaresama", "thanks for your effort"], ["会社 · kaisha", "company / office"], ["あいさつ · aisatsu", "greeting"], ["朝 · asa", "morning"]],
+            bl: "a",
+            b: "おつかれさま is pure hiragana: honorific お + つかれ (fatigue) + さま (the suffix for someone exalted). You are literally greeting Honorable Fatigue."
+          },
+          es: {
+            t: "Saludos de oficina — mañana: «debes estar cansado». Mediodía: «debes estar cansado». Noche: «debes estar cansado».",
+            w: "Otsukaresama honra literalmente el cansancio del otro — y es el saludo laboral universal a cualquier hora, incluidas las 9:02 AM, cuando nadie ha hecho nada todavía.",
+            c: "Reconoce el esfuerzo en lugar de describir la realidad: hola, adiós, gracias y puntuación de Slack, todo en una palabra con reverencia incluida.",
+            bites: [["おつかれさま · otsukaresama", "gracias por tu esfuerzo"], ["会社 · kaisha", "empresa / oficina"], ["あいさつ · aisatsu", "saludo"], ["朝 · asa", "mañana"]],
+            bl: "a",
+            b: "おつかれさま es puro hiragana: お honorífico + つかれ (cansancio) + さま (sufijo para alguien ilustre). Literalmente estás saludando al Honorable Cansancio."
+          }
+        }
+      },
+      {
+        scene: "ja4", small: true,
+        front: "笑い方の進化：\n笑う → w → www → 草\n（wwwが草に見えるから）",
+        roman: "warai-kata no shinka: warau → w → www → kusa",
+        d: {
+          en: {
+            t: "Evolution of laughing online: warau → w → www → grass. (Because wwww looks like grass growing.)",
+            w: "Japanese texting laughter speed-ran its own etymology: warau (laugh) shortened to w, stacked into wwww… which looks like blades of grass — so now 草 (kusa, grass) means LOL all by itself.",
+            c: "And it keeps escalating: 大草原 — “great prairie” — means extremely funny. Every language grows its own laughter alphabet; Japan's literally grows.",
+            bites: [["笑う · warau", "to laugh"], ["草 · kusa", "grass → lol"], ["見える · mieru", "to look like"], ["大草原 · daisōgen", "great prairie = hilarious"]],
+            bl: "a",
+            b: "One kanji, 草, carries the entire joke — meaning borrowed from shape, shape borrowed from Latin letters. Kanji can be memes about other alphabets."
+          },
+          es: {
+            t: "Evolución de la risa en línea: warau → w → www → pasto. (Porque wwww parece pasto creciendo.)",
+            w: "La risa japonesa por chat corrió su propia etimología a toda velocidad: warau (reír) se acortó a w, se apiló en wwww… que parece pasto — así que ahora 草 (kusa, pasto) significa LOL por sí solo.",
+            c: "Y sigue escalando: 大草原 — “gran pradera” — significa graciosísimo. Cada idioma cultiva su propio alfabeto de la risa; el de Japón crece, literalmente.",
+            bites: [["笑う · warau", "reír"], ["草 · kusa", "pasto → jajaja"], ["見える · mieru", "parecerse a"], ["大草原 · daisōgen", "gran pradera = para morirse"]],
+            bl: "a",
+            b: "Un solo kanji, 草, carga todo el chiste: significado prestado de la forma, forma prestada de letras latinas. Un kanji puede ser meme de otros alfabetos."
+          }
+        }
+      }
+    ]
+  },
+  {
+    code: "hi", langTag: "hi", flag: "🇮🇳", name: { en: "Hindi", es: "Hindi" },
+    panel: "#FFF5D3", shadow: "#EDD48F",
+    cards: [
+      {
+        scene: "hi", small: true,
+        front: "मेहमान: «अच्छा, अब चलते हैं»\n— एक घंटे बाद, अब भी दरवाज़े पर",
+        roman: "mehmaan: “achha, ab chalte hain” — ek ghante baad, ab bhi darwaaze par",
+        d: {
+          en: {
+            t: "Guests: “Right, we're off now.” — One hour later, still at the door.",
+            w: "The Great Indian Goodbye. “We're leaving” is not an action — it's the opening line of an entirely new conversation, held standing at the door. Every family knows it. Every family does it anyway.",
+            c: "Departures are affection. Leaving quickly reads as cold — the doorway conversation is where the actual news finally gets exchanged. The samosas may reappear.",
+            bites: [["मेहमान · mehmaan", "guest"], ["अच्छा · achha", "right, okay — the Swiss Army word"], ["अब · ab", "now"], ["चलते हैं · chalte hain", "we're off"], ["दरवाज़ा · darwaaza", "door"]],
+            bl: "g",
+            b: "“Chalte hain” is present tense — “we're off,” not “we will go.” Hindi loves the present for things that are about to (eventually) happen. Given the hour at the door, the tense is doing its best."
+          },
+          es: {
+            t: "Invitados: «Bueno, ya nos vamos». — Una hora después, todavía en la puerta.",
+            w: "La Gran Despedida India: “ya nos vamos” no es una acción sino la primera línea de una conversación completamente nueva, de pie, en la puerta. Toda familia lo sabe. Toda familia lo hace igual.",
+            c: "Despedirse rápido se siente frío: la plática del umbral es donde por fin se cuentan las noticias de verdad. Puede que las samosas reaparezcan.",
+            bites: [["मेहमान · mehmaan", "invitado"], ["अच्छा · achha", "bueno / ok — la palabra multiusos"], ["अब · ab", "ahora"], ["चलते हैं · chalte hain", "ya nos vamos"], ["दरवाज़ा · darwaaza", "puerta"]],
+            bl: "g",
+            b: "«Chalte hain» está en presente: “nos vamos (ya)”, no “nos iremos”. Al hindi le encanta el presente para lo que está a punto de (eventualmente) pasar; con la hora en la puerta, el tiempo verbal hace lo que puede."
+          }
+        }
+      },
+      {
+        scene: "hi2", small: true,
+        front: "हिंदी: «कल» का मतलब कल भी है\nऔर कल भी\n(संदर्भ ही सब कुछ है)",
+        roman: "Hindi: “kal” ka matlab kal bhi hai, aur kal bhi (sandarbh hi sab kuchh hai)",
+        d: {
+          en: {
+            t: "Hindi: “kal” means yesterday. Also tomorrow. (Context is everything.)",
+            w: "One word, both directions of time. The verb tense quietly does the disambiguating — elegant, until someone texts just “kal” and you check your calendar in both directions.",
+            c: "It doubles down: parson is two days away — either way. Time as a loop, not an arrow, is philosophically very on-brand.",
+            bites: [["कल · kal", "yesterday / tomorrow"], ["परसों · parson", "2 days away (either direction)"], ["बीता हुआ · beeta hua", "past"], ["आने वाला · aane waala", "upcoming"], ["संदर्भ · sandarbh", "context"]],
+            bl: "g",
+            b: "The verb rescues kal: «kal gaya tha» (went — so yesterday) vs. «kal jaaunga» (will go — so tomorrow). Hindi stores time in the verb, not in the day-word."
+          },
+          es: {
+            t: "Hindi: «kal» significa ayer. También mañana. (El contexto lo es todo.)",
+            w: "Una palabra, ambas direcciones del tiempo. El tiempo verbal desambigua en silencio — elegante, hasta que alguien te escribe solo “kal” y revisas el calendario en ambos sentidos.",
+            c: "Y lo duplica: parson es a dos días — hacia cualquier lado. El tiempo como bucle y no como flecha: filosóficamente muy en personaje.",
+            bites: [["कल · kal", "ayer / mañana"], ["परसों · parson", "a 2 días (cualquier dirección)"], ["बीता हुआ · beeta hua", "pasado"], ["आने वाला · aane waala", "por venir"], ["संदर्भ · sandarbh", "contexto"]],
+            bl: "g",
+            b: "El verbo rescata a kal: «kal gaya tha» (fui — ayer) vs. «kal jaaunga» (iré — mañana). El hindi guarda el tiempo en el verbo, no en la palabra del día."
+          }
+        }
+      },
+      {
+        scene: "hi3", small: true,
+        front: "भारतीय सुपरपावर:\n«एडजस्ट कर लेंगे»\n(3 की सीट, 5 लोग, ज़ीरो शिकायत)",
+        roman: "Bhartiya superpower: “adjust kar lenge” (3 ki seat, 5 log, zero shikayat)",
+        d: {
+          en: {
+            t: "Indian superpower: “we'll adjust.” (A seat for 3, 5 people, zero complaints.)",
+            w: "“Adjust” — an English word Hindi adopted and upgraded into philosophy: space, plans, schedules, life. It always fits. The train seat is the canonical proof.",
+            c: "Peak Hinglish: English verbs take Hindi auxiliaries (kar lenge) and become more expressive than either parent language.",
+            bites: [["एडजस्ट · adjust", "the superpower"], ["कर लेंगे · kar lenge", "we'll manage it"], ["सीट · seat", "seat (borrowed, upgraded)"], ["शिकायत · shikaayat", "complaint"]],
+            bl: "g",
+            b: "«Kar lenge» = kar (do) + lenge (will take): a compound verb where lena adds “for ourselves, capably.” Hindi's built-in can-do suffix."
+          },
+          es: {
+            t: "Superpoder indio: «adjust kar lenge» — ya nos acomodamos. (Asiento para 3, 5 personas, cero quejas.)",
+            w: "“Adjust”: una palabra inglesa que el hindi adoptó y ascendió a filosofía — espacio, planes, horarios, vida. Siempre cabe. El asiento del tren es la prueba canónica.",
+            c: "Hinglish en su máxima expresión: los verbos ingleses toman auxiliares hindis (kar lenge) y quedan más expresivos que cualquiera de los dos idiomas por separado.",
+            bites: [["एडजस्ट · adjust", "el superpoder"], ["कर लेंगे · kar lenge", "lo resolvemos"], ["सीट · seat", "asiento (prestado y mejorado)"], ["शिकायत · shikaayat", "queja"]],
+            bl: "g",
+            b: "«Kar lenge» = kar (hacer) + lenge (tomaremos): verbo compuesto donde lena agrega “nosotros podemos con esto”. El sufijo optimista de serie del hindi."
+          }
+        }
+      },
+      {
+        scene: "hi4", small: true,
+        front: "मम्मी: «खाना तैयार है, आ जाओ!»\nखाना: 40 मिनट दूर",
+        roman: "Mummy: “khaana taiyaar hai, aa jao!” — khaana: 40 minute door",
+        d: {
+          en: {
+            t: "Mom: “Food's ready, come!” The food: 40 minutes away.",
+            w: "“Taiyaar” (ready) is aspirational — it means the process has begun. You're being summoned to wait in the kitchen, which is its own love language.",
+            c: "The call is about presence, not logistics: the family gathers before the food does. The waiting is part of the meal.",
+            bites: [["खाना · khaana", "food"], ["तैयार · taiyaar", "ready™"], ["आ जाओ · aa jao", "come on over"], ["दूर · door", "far away"]],
+            bl: "g",
+            b: "«Aa jao» — aana (come) fused with jaana (go): a compound meaning “come on over, fully.” Hindi pairs verbs to add completion the way English adds “up”: eat up, come over."
+          },
+          es: {
+            t: "Mamá: «¡La comida está lista, vengan!» La comida: a 40 minutos.",
+            w: "«Taiyaar» (lista) es aspiracional: significa que el proceso comenzó. Te están convocando a esperar en la cocina, lo cual es su propio lenguaje del amor.",
+            c: "El llamado va de presencia, no de logística: la familia se junta antes que la comida. La espera es parte del platillo.",
+            bites: [["खाना · khaana", "comida"], ["तैयार · taiyaar", "lista™"], ["आ जाओ · aa jao", "vengan ya"], ["दूर · door", "lejos"]],
+            bl: "g",
+            b: "«Aa jao»: aana (venir) fundido con jaana (ir) — un compuesto que significa “vente, del todo”. El hindi empareja verbos para agregar completitud, como el inglés agrega “up”."
+          }
+        }
+      }
+    ]
+  },
+  {
+    code: "ko", langTag: "ko", flag: "🇰🇷", name: { en: "Korean", es: "Coreano" },
+    panel: "#D7FFB8", shadow: "#AFE58A",
+    cards: [
+      {
+        scene: "ko",
+        front: "ㅋ → 재미없음\nㅋㅋ → 그냥 예의\nㅋㅋㅋㅋㅋㅋㅋ → 진짜 웃김",
+        roman: "k → jaemi-eopseum · kk → geunyang yeui · kkkkkkk → jinjja utgim",
+        d: {
+          en: {
+            t: "ㅋ → not funny. ㅋㅋ → just being polite. ㅋㅋㅋㅋㅋㅋㅋ → actually laughing.",
+            w: "ㅋ is Korean texting laughter, and the count is a precision instrument. One ㅋ can end a conversation. Everyone runs this math instantly, without ever having been taught it.",
+            c: "On KakaoTalk, laughter inflation is real: ㅎㅎ is the softer chuckle, and the truly delighted abandon counting altogether. Reading ㅋ-count correctly is genuine social literacy.",
+            bites: [["재미없다 · jaemi-eopda", "to be unfunny"], ["그냥 · geunyang", "just, simply"], ["예의 · yeui", "politeness, manners"], ["진짜 · jinjja", "really, genuinely"], ["웃기다 · utgida", "to be funny"]],
+            bl: "a",
+            b: "ㅋ is the letter kieuk — a k sound — clipped from 크크 (keu keu), cartoon snickering. Hangul is a true alphabet arranged in blocks, so lone letters moonlight as sound effects: ㅋㅋ laughter, ㄷㄷ shivering, ㅇㅇ “yep.”"
+          },
+          es: {
+            t: "ㅋ → no da risa. ㅋㅋ → pura cortesía. ㅋㅋㅋㅋㅋㅋㅋ → risa de verdad.",
+            w: "ㅋ es la risa coreana por chat, y el conteo es un instrumento de precisión: un solo ㅋ puede terminar una conversación. Todo el mundo hace este cálculo al instante sin que nadie se lo haya enseñado.",
+            c: "En KakaoTalk la inflación de risa es real: ㅎㅎ es la risita suave, y los verdaderamente divertidos abandonan el conteo. Leer bien los ㅋ es alfabetización social genuina.",
+            bites: [["재미없다 · jaemi-eopda", "no ser gracioso"], ["그냥 · geunyang", "nomás / simplemente"], ["예의 · yeui", "cortesía"], ["진짜 · jinjja", "de verdad"], ["웃기다 · utgida", "ser gracioso"]],
+            bl: "a",
+            b: "ㅋ es la letra kieuk — sonido k — recortada de 크크 (keu keu), risita de caricatura. El hangul es un alfabeto de verdad armado en bloques, y las letras sueltas trabajan de efectos de sonido: ㅋㅋ risa, ㄷㄷ escalofrío, ㅇㅇ “ajá”."
+          }
+        }
+      },
+      {
+        scene: "ko2", small: true,
+        front: "한국식 안부 인사:\n«밥 먹었어?»\n(메뉴가 궁금한 게 아님)",
+        roman: "hanguksik anbu insa: “bap meogeosseo?” (menyuga gunggeumhan ge anim)",
+        d: {
+          en: {
+            t: "The Korean wellness check: “Have you eaten?” (Nobody is asking about the menu.)",
+            w: "“Did you eat?” is what care sounds like in Korean — a greeting, not a survey. The right answer is warm, not informational.",
+            c: "Food anchors the idiom everywhere: 밥 한번 먹자 — “let's grab a meal sometime” — is the Korean “let's hang out,” with the same conversion rate as everywhere on Earth.",
+            bites: [["밥 · bap", "rice / a meal"], ["먹다 · meokda", "to eat"], ["안부 · anbu", "well-being"], ["진짜 · jinjja", "really"]],
+            bl: "a",
+            b: "먹었어 shows hangul's stacking: ㅁ + ㅓ + ㄱ snap into the block 먹. Letters click into syllable squares — you can sound out Korean on day one."
+          },
+          es: {
+            t: "El saludo coreano de cariño: «¿Ya comiste?» (Nadie pregunta por el menú.)",
+            w: "“¿Comiste?” es cómo suena el cariño en coreano: un saludo, no una encuesta. La respuesta correcta es cálida, no informativa.",
+            c: "La comida ancla el idioma entero: 밥 한번 먹자 — “un día comemos” — es el “luego nos vemos” coreano, con la misma tasa de cumplimiento que en todo el planeta.",
+            bites: [["밥 · bap", "arroz / comida"], ["먹다 · meokda", "comer"], ["안부 · anbu", "bienestar"], ["진짜 · jinjja", "de verdad"]],
+            bl: "a",
+            b: "먹었어 muestra el apilado del hangul: ㅁ + ㅓ + ㄱ se ensamblan en el bloque 먹. Las letras encajan en cuadros silábicos — puedes deletrear coreano desde el día uno."
+          }
+        }
+      },
+      {
+        scene: "ko3", small: true,
+        front: "회사 답장 진화론:\n네 → 넵 → 네네 → 넵넵!\n(전부 «yes». 전부 다름.)",
+        roman: "hoesa dapjang jinhwaron: ne → nep → nene → nepnep!",
+        d: {
+          en: {
+            t: "Evolution of the office reply: ne → nep → ne-ne → nep-nep! (All mean yes. All different.)",
+            w: "네 is yes; 넵 is yes with a salute; doubling adds enthusiasm you may or may not feel. Korean office chat runs on agreeability calibrated one consonant at a time.",
+            c: "There's a word for the person who can only answer 넵: a 넵무새 — a “nep-parrot.” Workplace hierarchy, spelled inside a single syllable.",
+            bites: [["네 · ne", "yes"], ["넵 · nep", "yes, crisply"], ["회사 · hoesa", "company"], ["답장 · dapjang", "reply"]],
+            bl: "a",
+            b: "네 vs. 넵: adding the final consonant ㅂ closes the syllable with a click. Hangul lets you spell politeness — literally."
+          },
+          es: {
+            t: "Evolución de la respuesta de oficina: ne → nep → ne-ne → ¡nep-nep! (Todas significan sí. Todas son distintas.)",
+            w: "네 es sí; 넵 es sí con saludo militar; duplicar agrega un entusiasmo que puedes sentir o no. El chat de oficina coreano corre sobre amabilidad calibrada consonante por consonante.",
+            c: "Existe una palabra para quien solo contesta 넵: un 넵무새, “perico del nep”. La jerarquía laboral, deletreada dentro de una sílaba.",
+            bites: [["네 · ne", "sí"], ["넵 · nep", "sí, con firmeza"], ["회사 · hoesa", "empresa"], ["답장 · dapjang", "respuesta"]],
+            bl: "a",
+            b: "네 vs. 넵: agregar la consonante final ㅂ cierra la sílaba con un clic. El hangul te deja deletrear la cortesía — literalmente."
+          }
+        }
+      },
+      {
+        scene: "ko4", small: true,
+        front: "«아이고»\n기쁠 때. 슬플 때. 아플 때.\n소파에 앉는 순간.",
+        roman: "“aigo” — gippeul ttae. seulpeul ttae. apeul ttae. sopa-e anneun sungan.",
+        d: {
+          en: {
+            t: "“Aigo” — when happy. When sad. When sore. The moment you sit on the couch.",
+            w: "Aigo is a full emotional operating system in one exhale: sympathy, delight, exhaustion, and the involuntary sound of joints meeting a cushion. Age activates it automatically.",
+            c: "You know Korean has truly moved in when you say it sitting down and mean nothing by it. Grandmother-certified.",
+            bites: [["아이고 · aigo", "oh dear / oof / aww"], ["기쁘다 · gippeuda", "to be glad"], ["아프다 · apeuda", "to hurt"], ["앉다 · anda", "to sit"]],
+            bl: "a",
+            b: "아이고 is almost all vowels: ㅏ-ㅣ-ㅗ held up by silent ㅇ placeholders. Hangul requires ㅇ to carry vowels — a letter whose whole job is to be nothing."
+          },
+          es: {
+            t: "«Aigo» — cuando estás feliz. Cuando estás triste. Cuando algo duele. Al sentarte en el sofá.",
+            w: "Aigo es un sistema operativo emocional completo en una exhalación: compasión, gusto, cansancio y el sonido involuntario de las rodillas al llegar al cojín. La edad lo activa en automático.",
+            c: "Sabes que el coreano ya vive en ti cuando lo dices al sentarte, sin querer decir nada. Certificado por abuelas.",
+            bites: [["아이고 · aigo", "ay / uf / aww"], ["기쁘다 · gippeuda", "alegrarse"], ["아프다 · apeuda", "doler"], ["앉다 · anda", "sentarse"]],
+            bl: "a",
+            b: "아이고 es casi puras vocales: ㅏ-ㅣ-ㅗ sostenidas por la ㅇ muda. El hangul exige ㅇ para cargar vocales — una letra cuyo único trabajo es no ser nada."
+          }
+        }
+      }
+    ]
+  },
+  {
+    code: "de", langTag: "de", flag: "🇩🇪", name: { en: "German", es: "Alemán" },
+    panel: "#F2E5FF", shadow: "#D8BFF2",
+    cards: [
+      {
+        scene: "de", small: true,
+        front: "„Na?“\n„Na!“\nEin komplettes deutsches Gespräch. Beide gehen zufrieden nach Hause.",
+        d: {
+          en: {
+            t: "“Na?” — “Na!” A complete German conversation. Both go home satisfied.",
+            w: "“Na” is untranslatable and unstoppable: hello, how are you, everything okay, well then — all in one syllable. Two Germans really can exchange just this and part ways feeling fully caught up.",
+            c: "German small talk is famously minimal, and that's not coldness — it's efficiency as respect. Nobody wants the weather chat. “Na?” acknowledges you completely while wasting zero seconds of anyone's Feierabend.",
+            bites: [["na", "well / hey / so — the everything-syllable"], ["das Gespräch", "conversation"], ["beide", "both"], ["zufrieden", "satisfied, content"], ["der Feierabend", "the sacred post-work evening"]],
+            bl: "g",
+            b: "Nach Hause vs. zu Hause: “nach Hause gehen” is heading home, “zu Hause sein” is being home. German bakes direction into the preposition — the grammar knows whether you've left yet."
+          },
+          es: {
+            t: "«¿Na?» — «¡Na!» Una conversación alemana completa. Ambos se van a casa satisfechos.",
+            w: "«Na» es intraducible e imparable: hola, cómo estás, todo bien, ¿y entonces? — todo en una sílaba. Dos alemanes de verdad pueden intercambiar solo esto y separarse sintiéndose al día.",
+            c: "El small talk alemán es mínimo por diseño, y no es frialdad: es eficiencia como respeto. Nadie quiere la charla del clima; «Na?» te reconoce por completo sin gastar ni un segundo del Feierabend de nadie.",
+            bites: [["na", "hola / qué tal / ¿y bien? — la sílaba total"], ["das Gespräch", "la conversación"], ["beide", "ambos"], ["zufrieden", "satisfecho"], ["der Feierabend", "la sagrada tarde post-trabajo"]],
+            bl: "g",
+            b: "Nach Hause vs. zu Hause: «nach Hause gehen» es ir hacia casa; «zu Hause sein» es estar en casa. El alemán hornea la dirección dentro de la preposición: la gramática sabe si ya saliste o no."
+          }
+        }
+      },
+      {
+        scene: "de2", small: true,
+        front: "16:59: „Kannst du noch schnell…?“\n17:00: Feierabend.\nDiese Person existiert nicht mehr.",
+        d: {
+          en: {
+            t: "4:59 PM: “Can you real quick—?” 5:00 PM: Feierabend. That person no longer exists.",
+            w: "Feierabend — literally “celebration evening” — is the sacred instant work ends. It's not an attitude; it's load-bearing cultural infrastructure, and “nach Feierabend” functions as a complete legal defense.",
+            c: "Leaving on time isn't laziness in Germany — it's correctness. The language needed a dedicated noun for it, which tells you everything.",
+            bites: [["der Feierabend", "end-of-work (sacred)"], ["noch schnell", "real quick (a trap)"], ["kannst du", "can you"], ["nicht mehr", "no longer"]],
+            bl: "g",
+            b: "Feier + Abend: German solves conceptual gaps by stapling nouns together. When Germans need a value, they build a compound for it."
+          },
+          es: {
+            t: "16:59: «¿Puedes rapidito…?» 17:00: Feierabend. Esa persona ya no existe.",
+            w: "Feierabend — literalmente “tarde de celebración” — es el instante sagrado en que termina el trabajo. No es una actitud: es infraestructura cultural de carga, y «nach Feierabend» funciona como defensa legal completa.",
+            c: "Salir a tiempo no es flojera en Alemania: es corrección. El idioma necesitó un sustantivo dedicado para esto, y eso lo dice todo.",
+            bites: [["der Feierabend", "el fin de jornada (sagrado)"], ["noch schnell", "rapidito (una trampa)"], ["kannst du", "puedes"], ["nicht mehr", "ya no"]],
+            bl: "g",
+            b: "Feier + Abend: el alemán resuelve huecos conceptuales engrapando sustantivos. Cuando los alemanes necesitan un valor, le construyen una palabra compuesta."
+          }
+        }
+      },
+      {
+        scene: "de3", small: true,
+        front: "„Doch“ — ein Wort, ein ganzer Sieg:\n— Nein!\n— Doch!\n(Diskussion beendet)",
+        d: {
+          en: {
+            t: "“Doch” — one word, a total victory: “No!” “Doch!” (Discussion over.)",
+            w: "Doch un-negates a negation in one syllable — “yes it IS.” English needs a full sentence of pushback; German has a dedicated particle, and children weaponize it by age three.",
+            c: "The Nein!/Doch! volley is a genuine format — playground and parliament alike. Losing to a doch is structurally impossible; you can only say nein again, weaker.",
+            bites: [["doch", "yes-it-is (the un-no)"], ["der Sieg", "victory"], ["der Streit", "argument"], ["beendet", "finished"]],
+            bl: "g",
+            b: "Doch is a modal particle — one of German's seasoning words (doch, mal, halt, eben) that carry tone instead of meaning. Learners fear them; locals can't finish a sentence without them."
+          },
+          es: {
+            t: "«Doch» — una palabra, una victoria total: «Nein!» «¡Doch!» (Discusión terminada.)",
+            w: "Doch des-niega una negación en una sílaba: “que sí”. El español necesita una frase entera para contraatacar; el alemán tiene una partícula dedicada, y los niños la usan como arma desde los tres años.",
+            c: "El intercambio Nein!/Doch! es un formato real — de patio de escuela y de parlamento. Perder contra un doch es estructuralmente imposible: solo puedes repetir nein, más débil.",
+            bites: [["doch", "que sí (el des-no)"], ["der Sieg", "la victoria"], ["der Streit", "la discusión"], ["beendet", "terminado"]],
+            bl: "g",
+            b: "Doch es una partícula modal: las palabras-sazón del alemán (doch, mal, halt, eben) que cargan tono en vez de significado. Los estudiantes les temen; los locales no terminan una frase sin ellas."
+          }
+        }
+      },
+      {
+        scene: "de4", small: true,
+        front: "Deutsche Ehrlichkeit:\n„Wie findest du meine Frisur?“\n— „Schlecht.“\n(Kein Hass. Nur Daten.)",
+        d: {
+          en: {
+            t: "German honesty. “How do you like my haircut?” — “Bad.” (No hate. Just data.)",
+            w: "German small talk deletes the cushion words; feedback arrives uninsulated. It's not rudeness — it's the conviction that accuracy is the kindness.",
+            c: "The flip side: German compliments are 100% load-bearing. A “nicht schlecht” has passed rigorous internal testing and should be treasured.",
+            bites: [["die Ehrlichkeit", "honesty"], ["die Frisur", "haircut"], ["schlecht", "bad"], ["die Daten", "data"]],
+            bl: "g",
+            b: "“Wie findest du…?” — literally “how do you FIND…”: German asks for findings, and findings it receives."
+          },
+          es: {
+            t: "Honestidad alemana. «¿Qué tal mi corte de pelo?» — «Mal.» (Sin odio. Solo datos.)",
+            w: "El small talk alemán borra las palabras-colchón; la retroalimentación llega sin aislante. No es grosería: es la convicción de que la precisión es la amabilidad.",
+            c: "El reverso: los cumplidos alemanes cargan peso estructural. Un «nicht schlecht» pasó pruebas internas rigurosas y debe atesorarse.",
+            bites: [["die Ehrlichkeit", "la honestidad"], ["die Frisur", "el corte de pelo"], ["schlecht", "mal / malo"], ["die Daten", "los datos"]],
+            bl: "g",
+            b: "«Wie findest du…?» — literalmente “¿cómo ENCUENTRAS…?”: el alemán pide hallazgos, y hallazgos recibe."
+          }
+        }
+      }
+    ]
+  },
+  {
+    code: "en", langTag: "en", flag: "🇺🇸", name: { en: "English", es: "Inglés" },
+    panel: "#DDF4FF", shadow: "#B6DAF5",
+    cards: [
+      {
+        scene: "en", small: true,
+        front: "«Per my last email…»\n(the most polite rage in the English language)",
+        d: { es: {
+          t: "«Según mi último correo…» — la furia más educada del idioma inglés.",
+          w: "El inglés corporativo envuelve el enojo en cortesía: “per my last email” significa “ya te respondí; esta vez léelo”. Todo oficinista angloparlante lo ha escrito sonriendo con rabia.",
+          c: "La cortesía profesional es inversamente proporcional a la paciencia: “just checking in”, “friendly reminder”, “as discussed”… cuanto más amable suena, más cerca está la explosión.",
+          bites: [["per", "según"], ["last", "último / anterior"], ["friendly reminder", "recordatorio “amistoso”"], ["moving forward", "de aquí en adelante"]],
+          bl: "g",
+          b: "“Per” es una preposición latina que sobrevive en el inglés de oficina; “as per” es técnicamente redundante y aun así todos lo usan. La burocracia adora el latín."
+        } }
+      },
+      {
+        scene: "en2", small: true,
+        front: "British praise scale:\n«not bad» = amazing\n«quite good» = good\n«interesting» = run",
+        d: { es: {
+          t: "Escala británica del elogio: «not bad» = increíble. «quite good» = bueno. «interesting» = corre.",
+          w: "El understatement británico comprime todo el entusiasmo en negaciones suaves: “not bad” (no está mal) es el elogio máximo permitido. Decir “amazing” por todo delata al turista.",
+          c: "Y en reversa: “interesting” rara vez significa interesante. El arte está en escuchar lo que la cortesía está amortiguando.",
+          bites: [["not bad", "elogio máximo británico"], ["quite", "bastante (con trampa: a veces resta)"], ["lovely", "comodín amable"], ["cheers", "gracias / salud / adiós"]],
+          bl: "g",
+          b: "La lítote — afirmar negando lo contrario — es el músculo favorito del inglés británico: not bad, not too shabby, can't complain. Gramática de la modestia."
+        } }
+      },
+      {
+        scene: "en3", small: true,
+        front: "«How are you?»\n— not a question.\n«Good, you?»\n— not an answer.",
+        d: { es: {
+          t: "«How are you?» — no es una pregunta. «Good, you?» — no es una respuesta.",
+          w: "Es un apretón de manos verbal: nadie espera datos. Contestar con tu estado real rompe el protocolo — y detiene el tráfico del pasillo.",
+          c: "En EE. UU. el cajero te lo dice mientras ya atiende al siguiente. No es hipocresía: es un ritual de reconocimiento mutuo a velocidad de caminata.",
+          bites: [["how are you", "hola, básicamente"], ["good", "bien (única respuesta esperada)"], ["you?", "¿y tú? (devolución obligatoria)"], ["what's up", "otro saludo-trampa (respuesta: “what's up”)"]],
+          bl: "g",
+          b: "“You?” — el inglés recorta la pregunta entera a un solo pronombre y deja que la entonación haga el resto. Economía gramatical al servicio del ritual."
+        } }
+      },
+      {
+        scene: "en4", small: true,
+        front: "«Anyway, I'll let you go…»\n(real meaning: please let ME go)",
+        d: { es: {
+          t: "«Bueno, te dejo…» — significado real: déjame ir a MÍ.",
+          w: "La huida cortés perfecta: disfrazar tus ganas de colgar como un favor al otro. Todo angloparlante la usa; nadie se la cree; funciona igual.",
+          c: "Prima directa de la despedida india de una hora: cada cultura resuelve la culpa de despedirse a su manera. El inglés la delega.",
+          bites: [["anyway", "bueno / en fin (señal de cierre)"], ["I'll let you go", "te dejo (= me quiero ir)"], ["to hang up", "colgar"], ["take care", "cuídate"]],
+          bl: "g",
+          b: "“I'll let you go” usa el futuro con will — el de las decisiones espontáneas del momento. La gramática exacta de una huida improvisada."
+        } }
+      }
+    ]
+  }
+];
+
+/* ————————————————————————————————————————————————
+   Card art. Original characters, drawn to Duolingo's published
+   shape language (design.duolingo.com): rounded rects, circles,
+   rounded triangles only; flat perspective; pill ground shadows;
+   floating hands and feet; no gray; fewest shapes possible.
+   Colors come from Duolingo's published palette. The cast is
+   original — "Memo" (Fox orange, speech-bubble tail) recurs in
+   every scene alongside a Macaw-blue friend.
+   ———————————————————————————————————————————————— */
+const INK = "#4B4B4B";
+const ART_FONT = "font-family=\"'Nunito', sans-serif\" font-weight=\"800\"";
+const MEMO = { col: "#FF9600", dark: "#E08600" };
+const PAL = { col: "#1CB0F6", dark: "#1899D6" };
+const BEE = { col: "#FFC800", dark: "#EAB000" };
+
+function drop(x, y) {
+  return `<path class="sv-bob" d="M ${x} ${y} Q ${x + 5} ${y + 8} ${x} ${y + 14} Q ${x - 5} ${y + 8} ${x} ${y} " fill="#7AF0F2"/>`;
+}
+function heart(x, y) {
+  return `<g class="sv-bob"><circle cx="${x - 6}" cy="${y}" r="7" fill="#FF4B4B"/><circle cx="${x + 6}" cy="${y}" r="7" fill="#FF4B4B"/><path d="M ${x - 12} ${y + 3} L ${x} ${y + 16} L ${x + 12} ${y + 3} Z" fill="#FF4B4B" stroke="#FF4B4B" stroke-width="4" stroke-linejoin="round"/></g>`;
+}
+function steam(x, y) {
+  return `<circle class="sv-bob" cx="${x}" cy="${y}" r="4" fill="#fff"/><circle class="sv-bob" cx="${x + 9}" cy="${y - 8}" r="3" fill="#fff" style="animation-delay:.4s"/>`;
+}
+function cup(x, y) {
+  return `<rect x="${x - 4}" y="${y + 16}" width="42" height="6" rx="3" fill="#fff"/><rect x="${x}" y="${y}" width="26" height="18" rx="6" fill="#fff"/><rect x="${x + 26}" y="${y + 4}" width="9" height="9" rx="4.5" fill="#fff"/>` + steam(x + 10, y - 10);
+}
+
+function chr(o) {
+  const col = o.col, dark = o.dark, look = o.look || 0;
+  const p = [];
+  if (o.shadow) p.push(`<rect x="-26" y="-4" width="52" height="8" rx="4" fill="${o.shadow}"/>`);
+  const stag = o.step ? 3 : 0;
+  p.push(`<rect x="-19" y="${-11 - stag}" width="14" height="8" rx="4" fill="${dark}"/>`);
+  p.push(`<rect x="5" y="-11" width="14" height="8" rx="4" fill="${dark}"/>`);
+  if (o.tail) p.push(`<path d="M -26 -16 L -36 -3 L -19 -9 Z" fill="${col}" stroke="${col}" stroke-width="5" stroke-linejoin="round"/>`);
+  p.push(`<rect x="-28" y="-70" width="56" height="54" rx="20" fill="${col}"/>`);
+  if (o.eyes === "closed") {
+    p.push(`<rect x="-17" y="-53" width="13" height="4.5" rx="2.25" fill="${INK}"/>`);
+    p.push(`<rect x="4" y="-53" width="13" height="4.5" rx="2.25" fill="${INK}"/>`);
+  } else {
+    p.push(`<rect x="-17" y="-60" width="13" height="17" rx="6.5" fill="#fff"/>`);
+    p.push(`<rect x="4" y="-60" width="13" height="17" rx="6.5" fill="#fff"/>`);
+    p.push(`<circle cx="${-10.5 + look * 2.5}" cy="-50" r="3" fill="${INK}"/>`);
+    p.push(`<circle cx="${10.5 + look * 2.5}" cy="-50" r="3" fill="${INK}"/>`);
+    if (o.eyes === "half") {
+      p.push(`<rect x="-18" y="-61" width="15" height="8" rx="4" fill="${col}"/>`);
+      p.push(`<rect x="3" y="-61" width="15" height="8" rx="4" fill="${col}"/>`);
+    }
+  }
+  if (o.mouth === "flat") p.push(`<rect x="-2" y="-38" width="11" height="3" rx="1.5" fill="${INK}"/>`);
+  else if (o.mouth === "open") {
+    p.push(`<rect x="-6" y="-41" width="18" height="13" rx="6.5" fill="${INK}"/>`);
+    p.push(`<rect x="-1" y="-34" width="9" height="5" rx="2.5" fill="#FFCAFF"/>`);
+  }
+  else if (o.mouth === "oh") p.push(`<circle cx="3" cy="-37" r="3.5" fill="${INK}"/>`);
+  else p.push(`<path d="M -4 -38 Q 2 -32 9 -37" stroke="${INK}" stroke-width="3" stroke-linecap="round" fill="none"/>`);
+  (o.hands || []).forEach(h => p.push(`<circle cx="${h[0]}" cy="${h[1]}" r="6.5" fill="${dark}"/>`));
+  return `<g transform="translate(${o.x},${o.y})">${p.join("")}</g>`;
+}
+
+function speechBubble(x, y, w, h, tail, label, size) {
+  const t = tail === "left"
+    ? `<path d="M ${x + 14} ${y + h - 2} Q ${x + 8} ${y + h + 12} ${x + 2} ${y + h + 14} Q ${x + 10} ${y + h + 6} ${x + 26} ${y + h - 2} Z" fill="#fff"/>`
+    : `<path d="M ${x + w - 14} ${y + h - 2} Q ${x + w - 8} ${y + h + 12} ${x + w - 2} ${y + h + 14} Q ${x + w - 10} ${y + h + 6} ${x + w - 26} ${y + h - 2} Z" fill="#fff"/>`;
+  const txt = label ? `<text x="${x + w / 2}" y="${y + h / 2 + 5}" ${ART_FONT} font-size="${size || 14}" fill="${INK}" text-anchor="middle">${label}</text>` : "";
+  return `<g class="sv-bob"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.min(14, h / 2)}" fill="#fff"/>${t}${txt}</g>`;
+}
+
+function clock(cx, cy, r, face) {
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${face || "#FFC800"}"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="${r - 3.5}" fill="#fff"/>` +
+    `<rect x="${cx - 1.5}" y="${cy - r + 6}" width="3" height="${r - 4.5}" rx="1.5" fill="#FF9600" transform="rotate(55 ${cx} ${cy})"/>` +
+    `<rect x="${cx - 1.5}" y="${cy - r + 8}" width="3" height="${r - 6.5}" rx="1.5" fill="#FF9600" transform="rotate(-55 ${cx} ${cy})"/>`;
+}
+
+const ART = {
+  /* waiting on "5 minutos": Memo, skeptical, phone in hand, the promise floats above */
+  es(d) {
+    return chr({ x: 105, y: 126, ...MEMO, tail: true, look: 1, eyes: "half", mouth: "flat", shadow: d.shadow, hands: [[24, -30]] }) +
+      `<rect x="136" y="52" width="28" height="48" rx="7" fill="#2B70C9"/>` +
+      `<rect x="140" y="58" width="20" height="36" rx="4" fill="#DDF4FF"/>` +
+      speechBubble(180, 18, 108, 40, "left") +
+      clock(206, 38, 12) +
+      `<text x="250" y="44" ${ART_FONT} font-size="15" fill="${INK}" text-anchor="middle">5 min</text>`;
+  },
+  /* nobody: … the friend says "du coup" again; Memo has stopped reacting */
+  fr(d) {
+    return chr({ x: 85, y: 126, ...PAL, look: 1, eyes: "round", mouth: "open", shadow: d.shadow, hands: [[-32, -40], [32, -40]] }) +
+      speechBubble(128, 16, 100, 38, "left", "du coup") +
+      `<g class="sv-bob"><circle cx="122" cy="72" r="9" fill="#fff"/><circle cx="108" cy="88" r="5" fill="#fff"/></g>` +
+      `<g class="sv-bob"><circle cx="252" cy="34" r="8" fill="#fff"/><circle cx="240" cy="50" r="4.5" fill="#fff"/></g>` +
+      chr({ x: 258, y: 126, ...MEMO, tail: true, look: -1, eyes: "half", mouth: "flat", shadow: d.shadow });
+  },
+  /* "iketara iku": Memo waves yes while dreaming of the couch */
+  ja(d) {
+    return chr({ x: 100, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "smile", shadow: d.shadow, hands: [[36, -64], [-30, -34]] }) +
+      `<path class="sv-bob" d="M 52 52 Q 58 60 52 66 Q 46 60 52 52" fill="#7AF0F2"/>` +
+      `<circle cx="152" cy="80" r="4.5" fill="#fff"/><circle cx="168" cy="66" r="6.5" fill="#fff"/>` +
+      `<g class="sv-bob"><rect x="182" y="20" width="104" height="58" rx="26" fill="#fff"/>` +
+      `<rect x="200" y="34" width="68" height="16" rx="8" fill="#CE82FF"/>` +
+      `<rect x="204" y="46" width="60" height="14" rx="7" fill="#B569E8"/>` +
+      `<circle cx="202" cy="52" r="8" fill="#CE82FF"/><circle cx="266" cy="52" r="8" fill="#CE82FF"/></g>`;
+  },
+  /* the Great Indian Goodbye: still at the door, chatter ongoing */
+  hi(d) {
+    return `${clock(52, 32, 13, "#FF4B4B")}` +
+      chr({ x: 108, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "open", shadow: d.shadow, hands: [[30, -56]] }) +
+      chr({ x: 182, y: 126, ...PAL, look: -1, eyes: "round", mouth: "smile", shadow: d.shadow, hands: [[-30, -42]] }) +
+      `<g class="sv-bob"><circle cx="132" cy="38" r="8" fill="#fff"/><circle cx="152" cy="26" r="10.5" fill="#fff"/><circle cx="174" cy="38" r="7" fill="#fff"/></g>` +
+      `<rect x="240" y="24" width="54" height="102" rx="9" fill="#E5A259"/>` +
+      `<rect x="248" y="34" width="38" height="38" rx="7" fill="#EFB273"/>` +
+      `<rect x="248" y="80" width="38" height="38" rx="7" fill="#EFB273"/>` +
+      `<circle cx="252" cy="76" r="4" fill="#FFC800"/>`;
+  },
+  /* the ㅋ-count: the chat does the talking; Memo is at seven ㅋ */
+  ko(d) {
+    return `<rect x="66" y="18" width="64" height="106" rx="12" fill="#2B70C9"/>` +
+      `<rect x="72" y="26" width="52" height="90" rx="8" fill="#DDF4FF"/>` +
+      `<g class="sv-pop" style="animation-delay:.1s"><rect x="78" y="36" width="18" height="14" rx="7" fill="#fff"/><text x="87" y="47" ${ART_FONT} font-size="10" fill="${INK}" text-anchor="middle">ㅋ</text></g>` +
+      `<g class="sv-pop" style="animation-delay:.45s"><rect x="78" y="56" width="26" height="14" rx="7" fill="#fff"/><text x="91" y="67" ${ART_FONT} font-size="10" fill="${INK}" text-anchor="middle">ㅋㅋ</text></g>` +
+      `<g class="sv-pop" style="animation-delay:.8s"><rect x="78" y="76" width="40" height="14" rx="7" fill="#FF9600"/><text x="98" y="87" ${ART_FONT} font-size="10" fill="#fff" text-anchor="middle">ㅋㅋㅋㅋ</text></g>` +
+      chr({ x: 220, y: 126, ...MEMO, tail: true, eyes: "closed", mouth: "open", shadow: d.shadow, hands: [[-34, -58], [34, -58]] });
+  },
+  /* "Na?" "Na!" — a complete conversation, already walking on */
+  de(d) {
+    return chr({ x: 92, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "smile", step: true, shadow: d.shadow, hands: [[26, -46]] }) +
+      speechBubble(56, 18, 52, 32, "right", "Na?") +
+      chr({ x: 232, y: 126, ...PAL, look: -1, eyes: "round", mouth: "smile", step: true, shadow: d.shadow, hands: [[-26, -46]] }) +
+      speechBubble(214, 18, 52, 32, "left", "Na!");
+  },
+  /* "per my last email": Memo, smiling professionally, already typing */
+  en(d) {
+    return chr({ x: 100, y: 126, ...MEMO, tail: true, look: 1, eyes: "half", mouth: "smile", shadow: d.shadow, hands: [[30, -28]] }) +
+      `<rect x="142" y="58" width="56" height="38" rx="6" fill="#2B70C9"/>` +
+      `<rect x="146" y="63" width="48" height="28" rx="4" fill="#DDF4FF"/>` +
+      `<rect x="136" y="96" width="68" height="10" rx="5" fill="#1899D6"/>` +
+      speechBubble(180, 12, 128, 34, "left", "per my last email…", 11);
+  },
+
+  /* "¿Cuándo?" "Ahorita." — the clock declines to comment */
+  es2(d) {
+    return chr({ x: 80, y: 126, ...PAL, look: 1, eyes: "round", mouth: "oh", shadow: d.shadow, hands: [[30, -40]] }) +
+      speechBubble(46, 16, 86, 32, "left", "¿Cuándo?", 13) +
+      chr({ x: 245, y: 126, ...MEMO, tail: true, look: -1, eyes: "half", mouth: "smile", shadow: d.shadow, hands: [[-28, -38]] }) +
+      speechBubble(198, 16, 90, 32, "right", "Ahorita", 13) +
+      clock(162, 84, 14);
+  },
+  /* "no pica" — it pica'd */
+  es3(d) {
+    return chr({ x: 95, y: 126, ...MEMO, tail: true, eyes: "closed", mouth: "open", shadow: d.shadow, hands: [[-32, -40], [32, -40]] }) +
+      drop(52, 46) + drop(140, 40) +
+      `<g class="sv-bob"><rect x="162" y="80" width="36" height="15" rx="7.5" fill="#FF4B4B" transform="rotate(35 180 88)"/><circle cx="164" cy="76" r="5" fill="#58A700"/></g>` +
+      chr({ x: 252, y: 126, ...PAL, look: -1, eyes: "round", mouth: "smile", shadow: d.shadow }) +
+      speechBubble(208, 14, 84, 30, "right", "no pica", 13);
+  },
+  /* un cafecito = two hours, minimum */
+  es4(d) {
+    return chr({ x: 82, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "smile", shadow: d.shadow, hands: [[26, -44]] }) +
+      chr({ x: 248, y: 126, ...PAL, look: -1, eyes: "round", mouth: "open", shadow: d.shadow, hands: [[-26, -44]] }) +
+      `<rect x="128" y="106" width="72" height="10" rx="5" fill="#E5A259"/>` +
+      cup(140, 84) +
+      heart(166, 34);
+  },
+  /* combien de bises ? nobody knows */
+  fr2(d) {
+    return `<g transform="rotate(-8 118 126)">${chr({ x: 118, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "oh", shadow: d.shadow })}</g>` +
+      `<g transform="rotate(8 202 126)">${chr({ x: 202, y: 126, ...PAL, look: -1, eyes: "round", mouth: "oh", shadow: d.shadow })}</g>` +
+      speechBubble(112, 10, 96, 32, "left", "1, 2, 3… ?", 13);
+  },
+  /* "just one apéro" — the clock knows better */
+  fr3(d) {
+    return chr({ x: 82, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "smile", shadow: d.shadow, hands: [[30, -52]] }) +
+      chr({ x: 248, y: 126, ...PAL, look: -1, eyes: "closed", mouth: "open", shadow: d.shadow, hands: [[-30, -52]] }) +
+      `<g class="sv-bob"><circle cx="150" cy="64" r="10" fill="#FF4B4B"/><rect x="148" y="72" width="4" height="16" rx="2" fill="#fff"/><rect x="141" y="88" width="18" height="5" rx="2.5" fill="#fff"/></g>` +
+      `<g class="sv-bob" style="animation-delay:.5s"><circle cx="180" cy="60" r="10" fill="#FF4B4B"/><rect x="178" y="68" width="4" height="16" rx="2" fill="#fff"/><rect x="171" y="84" width="18" height="5" rx="2.5" fill="#fff"/></g>` +
+      clock(240, 30, 13);
+  },
+  /* bof. */
+  fr4(d) {
+    return chr({ x: 160, y: 126, ...MEMO, tail: true, eyes: "half", mouth: "flat", shadow: d.shadow, hands: [[-40, -50], [40, -50]] }) +
+      speechBubble(196, 20, 58, 30, "left", "bof", 13);
+  },
+  /* daijōbu desu — a yes, a no, a mystery */
+  ja2(d) {
+    return chr({ x: 85, y: 126, ...PAL, look: 1, eyes: "round", mouth: "smile", shadow: d.shadow, hands: [[30, -32]] }) +
+      `<rect x="118" y="72" width="30" height="26" rx="8" fill="#E5A259"/><rect x="126" y="62" width="14" height="12" rx="6" fill="none" stroke="#A56644" stroke-width="4"/>` +
+      chr({ x: 250, y: 126, ...MEMO, tail: true, look: -1, eyes: "round", mouth: "smile", shadow: d.shadow, hands: [[-32, -54]] }) +
+      speechBubble(168, 12, 116, 32, "right", "大丈夫です", 12);
+  },
+  /* otsukaresama, at every hour that exists */
+  ja3(d) {
+    return `<circle class="sv-bob" cx="48" cy="30" r="12" fill="#FFC800"/>` +
+      `<g class="sv-bob" style="animation-delay:.6s"><circle cx="278" cy="30" r="12" fill="#FFC800"/><circle cx="286" cy="24" r="10" fill="${d.panel}"/></g>` +
+      `<g transform="rotate(12 100 126)">${chr({ x: 100, y: 126, ...MEMO, tail: true, eyes: "closed", mouth: "smile", shadow: d.shadow })}</g>` +
+      `<g transform="rotate(-12 224 126)">${chr({ x: 224, y: 126, ...PAL, eyes: "closed", mouth: "smile", shadow: d.shadow })}</g>` +
+      speechBubble(104, 8, 116, 28, "left", "おつかれさま", 11);
+  },
+  /* w → www → actual grass */
+  ja4(d) {
+    const blade = (x, h, c) => `<path d="M ${x} 126 Q ${x + 4} ${126 - h} ${x + 8} 126 Z" fill="${c}" stroke="${c}" stroke-width="5" stroke-linejoin="round"/>`;
+    return chr({ x: 90, y: 126, ...MEMO, tail: true, eyes: "closed", mouth: "open", shadow: d.shadow, hands: [[-34, -58], [34, -58]] }) +
+      speechBubble(172, 18, 84, 30, "left", "wwww", 13) +
+      blade(170, 28, "#58CC02") + blade(192, 40, "#58A700") + blade(214, 24, "#58CC02") + blade(236, 36, "#58A700") + blade(258, 30, "#58CC02");
+  },
+  /* kal: see you yesterday. or tomorrow. */
+  hi2(d) {
+    return chr({ x: 82, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "oh", shadow: d.shadow, hands: [[26, -64]] }) +
+      `<g class="sv-bob"><rect x="146" y="42" width="60" height="56" rx="8" fill="#fff"/><rect x="146" y="42" width="60" height="17" rx="8" fill="#FF4B4B"/><rect x="156" y="36" width="6" height="12" rx="3" fill="#4B4B4B"/><rect x="190" y="36" width="6" height="12" rx="3" fill="#4B4B4B"/><text x="176" y="86" ${ART_FONT} font-size="15" fill="${INK}" text-anchor="middle">कल?</text></g>` +
+      `<g class="sv-bob" style="animation-delay:.3s"><rect x="232" y="58" width="30" height="8" rx="4" fill="#1CB0F6"/><path d="M 232 62 L 222 62 L 232 56 Z" fill="#1CB0F6" stroke="#1CB0F6" stroke-width="5" stroke-linejoin="round"/></g>` +
+      `<g class="sv-bob" style="animation-delay:.7s"><rect x="238" y="82" width="30" height="8" rx="4" fill="#1CB0F6"/><path d="M 268 86 L 278 86 L 268 80 Z" fill="#1CB0F6" stroke="#1CB0F6" stroke-width="5" stroke-linejoin="round"/></g>`;
+  },
+  /* seat for 3, five friends, zero complaints */
+  hi3(d) {
+    return `<rect x="78" y="58" width="164" height="14" rx="7" fill="#A56644"/><rect x="84" y="70" width="10" height="50" rx="5" fill="#A56644"/><rect x="226" y="70" width="10" height="50" rx="5" fill="#A56644"/>` +
+      chr({ x: 116, y: 126, ...PAL, look: 1, eyes: "round", mouth: "smile", shadow: d.shadow }) +
+      chr({ x: 160, y: 126, ...BEE, eyes: "closed", mouth: "open", shadow: d.shadow }) +
+      chr({ x: 204, y: 126, ...MEMO, tail: true, look: -1, eyes: "round", mouth: "smile", shadow: d.shadow }) +
+      `<text x="278" y="50" ${ART_FONT} font-size="15" fill="${INK}" text-anchor="middle" class="sv-bob">+2</text>`;
+  },
+  /* "food's ready" (it has begun to be imagined) */
+  hi4(d) {
+    return chr({ x: 80, y: 126, ...BEE, look: 1, eyes: "round", mouth: "open", shadow: d.shadow, hands: [[30, -56]] }) +
+      `<rect x="126" y="86" width="46" height="26" rx="10" fill="#2B70C9"/><rect x="132" y="80" width="34" height="8" rx="4" fill="#1453A3"/>` + steam(142, 66) +
+      speechBubble(148, 10, 128, 32, "left", "खाना तैयार है!", 12) +
+      chr({ x: 252, y: 126, ...MEMO, tail: true, look: -1, eyes: "round", mouth: "oh", shadow: d.shadow, hands: [[-30, -34]] }) +
+      `<circle cx="216" cy="102" r="11" fill="#fff"/>`;
+  },
+  /* "bap meogeosseo?" — care, served warm */
+  ko2(d) {
+    return chr({ x: 82, y: 126, ...PAL, look: 1, eyes: "round", mouth: "open", shadow: d.shadow, hands: [[30, -42]] }) +
+      speechBubble(118, 12, 104, 32, "left", "밥 먹었어?", 12) +
+      `<g class="sv-bob"><path d="M 152 92 A 17 17 0 0 1 186 92 Z" fill="#fff"/><rect x="146" y="92" width="46" height="18" rx="9" fill="#2B70C9"/></g>` + steam(162, 74) +
+      chr({ x: 252, y: 126, ...MEMO, tail: true, look: -1, eyes: "round", mouth: "smile", shadow: d.shadow }) +
+      heart(252, 32);
+  },
+  /* ne → nep → nepnep! — yes, with rank */
+  ko3(d) {
+    return chr({ x: 100, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "smile", shadow: d.shadow, hands: [[22, -66]] }) +
+      `<rect x="176" y="24" width="64" height="102" rx="12" fill="#2B70C9"/>` +
+      `<rect x="182" y="32" width="52" height="86" rx="8" fill="#DDF4FF"/>` +
+      `<g class="sv-pop" style="animation-delay:.1s"><rect x="188" y="42" width="20" height="14" rx="7" fill="#fff"/><text x="198" y="53" ${ART_FONT} font-size="10" fill="${INK}" text-anchor="middle">네</text></g>` +
+      `<g class="sv-pop" style="animation-delay:.45s"><rect x="188" y="62" width="24" height="14" rx="7" fill="#fff"/><text x="200" y="73" ${ART_FONT} font-size="10" fill="${INK}" text-anchor="middle">넵</text></g>` +
+      `<g class="sv-pop" style="animation-delay:.8s"><rect x="188" y="82" width="40" height="14" rx="7" fill="#FF9600"/><text x="208" y="93" ${ART_FONT} font-size="10" fill="#fff" text-anchor="middle">넵넵!</text></g>`;
+  },
+  /* aigo — the sound of sitting down */
+  ko4(d) {
+    return `<rect x="150" y="100" width="110" height="22" rx="11" fill="#CE82FF"/><rect x="158" y="78" width="94" height="26" rx="12" fill="#B569E8"/><circle cx="152" cy="106" r="11" fill="#CE82FF"/><circle cx="258" cy="106" r="11" fill="#CE82FF"/>` +
+      chr({ x: 205, y: 96, ...MEMO, tail: true, eyes: "closed", mouth: "open", shadow: null }) +
+      `<rect class="sv-bob" x="130" y="36" width="24" height="7" rx="3.5" fill="#fff"/><rect class="sv-bob" x="252" y="44" width="20" height="7" rx="3.5" fill="#fff" style="animation-delay:.4s"/>` +
+      speechBubble(58, 14, 76, 30, "right", "아이고", 12);
+  },
+  /* 17:00 — gone */
+  de2(d) {
+    return clock(64, 32, 13) +
+      `<rect class="sv-bob" x="42" y="76" width="28" height="7" rx="3.5" fill="#fff"/><rect class="sv-bob" x="34" y="92" width="22" height="7" rx="3.5" fill="#fff" style="animation-delay:.3s"/>` +
+      chr({ x: 128, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "smile", step: true, shadow: d.shadow, hands: [[-30, -40], [30, -50]] }) +
+      `<rect x="238" y="24" width="54" height="102" rx="9" fill="#E5A259"/><rect x="246" y="34" width="38" height="38" rx="7" fill="#EFB273"/><rect x="246" y="80" width="38" height="38" rx="7" fill="#EFB273"/><circle cx="250" cy="76" r="4" fill="#FFC800"/>`;
+  },
+  /* Nein! Doch! — checkmate */
+  de3(d) {
+    return chr({ x: 95, y: 126, ...PAL, look: 1, eyes: "half", mouth: "open", shadow: d.shadow, hands: [[30, -44]] }) +
+      speechBubble(50, 14, 68, 30, "left", "Nein!", 13) +
+      chr({ x: 235, y: 126, ...MEMO, tail: true, look: -1, eyes: "half", mouth: "open", shadow: d.shadow, hands: [[-30, -44]] }) +
+      speechBubble(204, 14, 68, 30, "right", "Doch!", 13);
+  },
+  /* "Schlecht." — no hate, just data */
+  de4(d) {
+    return chr({ x: 105, y: 126, ...PAL, look: 1, eyes: "round", mouth: "smile", shadow: d.shadow }) +
+      `<rect x="83" y="48" width="44" height="14" rx="7" fill="#1453A3"/>` +
+      `<g class="sv-bob"><rect x="142" y="38" width="30" height="7" rx="3.5" fill="#AFAFAF" transform="rotate(40 157 41)"/><rect x="142" y="38" width="30" height="7" rx="3.5" fill="#AFAFAF" transform="rotate(-40 157 41)"/><circle cx="146" cy="52" r="5" fill="#FF4B4B"/><circle cx="168" cy="52" r="5" fill="#FF4B4B"/></g>` +
+      chr({ x: 248, y: 126, ...MEMO, tail: true, look: -1, eyes: "half", mouth: "flat", shadow: d.shadow }) +
+      speechBubble(190, 12, 96, 30, "right", "Schlecht.", 12);
+  },
+  /* "not bad." — frame it */
+  en2(d) {
+    return chr({ x: 95, y: 126, ...MEMO, tail: true, look: 1, eyes: "half", mouth: "smile", shadow: d.shadow, hands: [[28, -34]] }) +
+      cup(132, 88) +
+      `<g class="sv-bob"><rect x="212" y="56" width="38" height="26" rx="9" fill="#FFC800"/><rect x="224" y="82" width="14" height="8" rx="3" fill="#EAB000"/><rect x="216" y="90" width="30" height="8" rx="4" fill="#FFC800"/><circle cx="210" cy="64" r="7" fill="none" stroke="#FFC800" stroke-width="4"/><circle cx="252" cy="64" r="7" fill="none" stroke="#FFC800" stroke-width="4"/></g>` +
+      speechBubble(196, 12, 92, 30, "left", "not bad.", 12);
+  },
+  /* two greetings pass in the hallway */
+  en3(d) {
+    return chr({ x: 92, y: 126, ...MEMO, tail: true, look: 1, eyes: "round", mouth: "smile", step: true, shadow: d.shadow, hands: [[28, -62]] }) +
+      speechBubble(40, 12, 116, 30, "left", "How are you?", 11) +
+      chr({ x: 232, y: 126, ...PAL, look: -1, eyes: "round", mouth: "smile", step: true, shadow: d.shadow, hands: [[-28, -62]] }) +
+      speechBubble(190, 12, 104, 30, "right", "Good, you?", 11);
+  },
+  /* "I'll let you go…" (a hostage negotiation) */
+  en4(d) {
+    return chr({ x: 105, y: 126, ...MEMO, tail: true, look: 1, eyes: "half", mouth: "open", shadow: d.shadow, hands: [[26, -58]] }) +
+      `<rect x="126" y="54" width="16" height="30" rx="6" fill="#2B70C9"/>` +
+      drop(62, 44) +
+      speechBubble(158, 12, 134, 30, "left", "I'll let you go…", 11) +
+      clock(250, 92, 13);
+  }
+};
+
+function artFor(deck, card) {
+  if (card.scene) {
+    return `<div class="art-panel" style="background:${deck.panel}"><svg viewBox="0 0 320 140" role="img" aria-label="Illustration for this meme">${ART[card.scene](deck)}</svg></div>`;
+  }
+  const anims = ["e-bob", "e-wig", "e-bob"];
+  const spans = card.emoji.map((e, i) =>
+    `<span class="text-4xl md:text-5xl ${anims[i % 3]}" style="animation-delay:${i * 0.35}s">${e}</span>`).join("");
+  return `<div class="art-panel emoji-art" style="background:${deck.panel}" aria-hidden="true">${spans}</div>`;
+}
+
+/* ————— state + rendering ————— */
+const LS_LANG = "lwm-lang", LS_BASE = "lwm-base";
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const card = document.getElementById("card");
+const backFace = document.getElementById("card-back");
+const overlay = document.getElementById("overlay");
+const gridEl = document.getElementById("grid");
+const chipsEl = document.getElementById("chips");
+const baseTabsEl = document.getElementById("base-tabs");
+
+let base = "en";
+let deckCode = "es";
+let openIdx = null;
+let flipped = false;
+
+const deckOf = c => DECKS.find(d => d.code === c);
+const visibleDecks = () => DECKS.filter(d => d.code !== base);
+
+function frontH() { return window.innerWidth < 480 ? 470 : 530; }
+function setHeight() {
+  const h = flipped ? Math.max(backFace.scrollHeight + 4, frontH()) : frontH();
+  card.style.height = h + "px";
+}
+
+function renderBaseTabs() {
+  baseTabsEl.innerHTML = "";
+  ["en", "es"].forEach(b => {
+    const btn = document.createElement("button");
+    btn.className = "chip px-3.5 py-2" + (b === base ? " chip-base-active" : "");
+    btn.innerHTML = `<span class="mr-1 text-sm">${STR[b].flagLabel}</span>${STR[b].tabLabel}`;
+    btn.addEventListener("click", () => setBase(b));
+    baseTabsEl.appendChild(btn);
+  });
+}
+
+function renderChips() {
+  chipsEl.innerHTML = "";
+  visibleDecks().forEach(d => {
+    const b = document.createElement("button");
+    b.className = "chip px-3.5 py-2" + (d.code === deckCode ? " chip-active" : "");
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", d.code === deckCode ? "true" : "false");
+    b.innerHTML = `<span class="mr-1 text-sm">${d.flag}</span>${d.name[base]}`;
+    b.addEventListener("click", () => { deckCode = d.code; persist(); renderChips(); renderGrid(); });
+    chipsEl.appendChild(b);
+  });
+}
+
+function renderGrid() {
+  const deck = deckOf(deckCode);
+  gridEl.innerHTML = "";
+  deck.cards.forEach((c, i) => {
+    const btn = document.createElement("button");
+    btn.className = "grid-card p-4 flex flex-col gap-3";
+    btn.setAttribute("aria-label", `Open meme ${i + 1}`);
+    const txt = document.createElement("div");
+    txt.className = "text-[15px] leading-snug font-bold whitespace-pre-line";
+    txt.setAttribute("lang", deck.langTag);
+    txt.textContent = c.front;
+    const D = c.d[base] || c.d.en || c.d.es;
+    const teaser = document.createElement("div");
+    teaser.className = "text-[12.5px] italic leading-snug flex-1";
+    teaser.style.color = "var(--hare)";
+    teaser.textContent = D.t;
+    const label = document.createElement("div");
+    label.className = "microlabel flex items-center justify-between";
+    label.style.color = "var(--hare)";
+    label.innerHTML = `<span>${deck.flag} meme ${i + 1}</span><span style="color: var(--green-edge)">${STR[base].open} →</span>`;
+    btn.insertAdjacentHTML("afterbegin", artFor(deck, c));
+    btn.appendChild(txt);
+    btn.appendChild(teaser);
+    btn.appendChild(label);
+    btn.addEventListener("click", () => openCard(i));
+    gridEl.appendChild(btn);
+  });
+  document.getElementById("grid-hint").textContent = STR[base].hint;
+  history.replaceState(null, "", "#" + deckCode + (openIdx !== null ? "-" + (openIdx + 1) : ""));
+}
+
+function renderModal() {
+  const deck = deckOf(deckCode);
+  const c = deck.cards[openIdx];
+  const D = c.d[base] || c.d.en || c.d.es;
+  const S = STR[base];
+
+  document.getElementById("front-flag").textContent = deck.flag;
+  document.getElementById("front-lang").textContent = deck.name[base];
+  document.getElementById("front-art").innerHTML = artFor(deck, c);
+  const ft = document.getElementById("front-text");
+  ft.textContent = c.front;
+  ft.setAttribute("lang", deck.langTag);
+  ft.className = (c.small ? "text-lg md:text-xl" : "text-[1.35rem] md:text-2xl") + " leading-snug font-bold whitespace-pre-line";
+  const fr = document.getElementById("front-roman");
+  fr.textContent = c.roman || "";
+  fr.style.display = c.roman ? "" : "none";
+
+  document.getElementById("back-flag").textContent = deck.flag;
+  document.getElementById("back-title").textContent = S.dissection;
+  document.getElementById("lbl-t").textContent = S.t;
+  document.getElementById("lbl-w").textContent = S.w;
+  document.getElementById("lbl-c").textContent = S.c;
+  document.getElementById("lbl-wb").textContent = S.wb;
+  document.getElementById("back-translation").textContent = D.t;
+  document.getElementById("back-why").textContent = D.w;
+  document.getElementById("back-culture").textContent = D.c;
+  document.getElementById("back-bite-label").textContent = D.bl === "a" ? S.a : S.g;
+  document.getElementById("back-bite").textContent = D.b;
+  document.getElementById("hint-flip").textContent = S.flip;
+  document.getElementById("hint-back").textContent = S.back;
+  document.getElementById("modal-hint").textContent = S.modalHint;
+
+  const bitesEl = document.getElementById("back-bites");
+  bitesEl.innerHTML = "";
+  D.bites.forEach(b => {
+    const chip = document.createElement("span");
+    chip.className = "px-2.5 py-1 rounded-full text-[13px] font-semibold";
+    chip.style.background = "#DDF4FF";
+    chip.innerHTML = `<strong>${b[0]}</strong><span style="color: var(--wolf)"> · ${b[1]}</span>`;
+    bitesEl.appendChild(chip);
+  });
+
+  const langsEl = document.getElementById("back-langs");
+  langsEl.innerHTML = "";
+  ["en", "es"].filter(b => b !== deckCode).forEach(b => {
+    const t = document.createElement("button");
+    t.className = "px-2 py-0.5 rounded-lg microlabel border-2 transition-colors";
+    t.style.borderColor = b === base ? "var(--green-edge)" : "var(--swan)";
+    t.style.color = b === base ? "var(--green-edge)" : "var(--hare)";
+    t.style.background = b === base ? "var(--green-soft)" : "#fff";
+    t.textContent = b.toUpperCase();
+    t.setAttribute("aria-label", "Explain in " + STR[b].tabLabel);
+    t.addEventListener("click", e => { e.stopPropagation(); setBase(b); });
+    langsEl.appendChild(t);
+  });
+
+  document.getElementById("sticker").textContent = S.meme(openIdx + 1, deck.cards.length);
+  setHeight();
+}
+
+function snapToFront() {
+  if (!flipped) return;
+  card.classList.add("no-anim");
+  card.classList.remove("flipped");
+  flipped = false;
+  void card.offsetWidth;
+  card.classList.remove("no-anim");
+}
+
+function openCard(i) {
+  openIdx = i;
+  snapToFront();
+  renderModal();
+  overlay.classList.remove("hidden");
+  overlay.classList.add("flex");
+  document.body.style.overflow = "hidden";
+  history.replaceState(null, "", "#" + deckCode + "-" + (i + 1));
+  card.focus({ preventScroll: true });
+}
+
+function closeModal() {
+  if (openIdx === null) return;
+  openIdx = null;
+  overlay.classList.add("hidden");
+  overlay.classList.remove("flex");
+  document.body.style.overflow = "";
+  history.replaceState(null, "", "#" + deckCode);
+}
+
+function navigate(delta) {
+  if (openIdx === null) return;
+  const n = deckOf(deckCode).cards.length;
+  openIdx = (openIdx + delta + n) % n;
+  snapToFront();
+  renderModal();
+  history.replaceState(null, "", "#" + deckCode + "-" + (openIdx + 1));
+}
+
+function flip() {
+  if (openIdx === null) return;
+  flipped = !flipped;
+  card.classList.toggle("flipped", flipped);
+  setHeight();
+  if (flipped && !reducedMotion) confetti();
+}
+
+function setBase(b) {
+  if (b === base) return;
+  base = b;
+  if (deckCode === base) deckCode = visibleDecks()[0].code;
+  persist();
+  renderBaseTabs();
+  renderChips();
+  renderGrid();
+  if (openIdx !== null) renderModal();
+}
+
+function persist() {
+  localStorage.setItem(LS_BASE, base);
+  localStorage.setItem(LS_LANG, deckCode);
+}
+
+function confetti() {
+  const scene = card.parentElement;
+  const colors = ["#58CC02", "#FFC800", "#1CB0F6", "#FF4B4B"];
+  for (let i = 0; i < 9; i++) {
+    const bit = document.createElement("span");
+    bit.className = "confetti-bit";
+    const size = 5 + Math.random() * 5;
+    bit.style.width = size + "px";
+    bit.style.height = size + "px";
+    bit.style.background = colors[i % colors.length];
+    bit.style.left = "50%";
+    bit.style.top = "12%";
+    scene.appendChild(bit);
+    const angle = (Math.random() - 0.5) * Math.PI * 0.9;
+    const dist = 60 + Math.random() * 90;
+    bit.animate([
+      { transform: "translate(0, 0) scale(1)", opacity: 1 },
+      { transform: `translate(${Math.sin(angle) * dist}px, ${-Math.cos(angle) * dist * 0.6 + 70}px) scale(0.3)`, opacity: 0 }
+    ], { duration: 700 + Math.random() * 300, easing: "cubic-bezier(0.2, 0.6, 0.4, 1)" }).onfinish = () => bit.remove();
+  }
+}
+
+/* ————— events ————— */
+card.addEventListener("click", flip);
+card.addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); flip(); }
+});
+document.getElementById("modal-close").addEventListener("click", closeModal);
+overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+document.querySelectorAll("[data-nav=prev]").forEach(b => b.addEventListener("click", () => navigate(-1)));
+document.querySelectorAll("[data-nav=next]").forEach(b => b.addEventListener("click", () => navigate(1)));
+
+document.addEventListener("keydown", e => {
+  const tag = e.target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
+  if (e.key === "Escape") closeModal();
+  else if (openIdx !== null && e.key === "ArrowLeft") navigate(-1);
+  else if (openIdx !== null && e.key === "ArrowRight") navigate(1);
+  else if (openIdx !== null && e.code === "Space" && tag !== "BUTTON" && tag !== "A") { e.preventDefault(); flip(); }
+});
+
+window.addEventListener("resize", () => { if (openIdx !== null) setHeight(); });
+
+/* ————— init ————— */
+(function init() {
+  const savedBase = localStorage.getItem(LS_BASE);
+  if (savedBase === "en" || savedBase === "es") base = savedBase;
+
+  const m = location.hash.match(/^#([a-z]{2})(?:-(\d+))?$/);
+  let openOnLoad = null;
+  if (m && deckOf(m[1])) {
+    deckCode = m[1];
+    if (deckCode === base) base = base === "en" ? "es" : "en";
+    if (m[2]) {
+      const i = parseInt(m[2], 10) - 1;
+      if (i >= 0 && i < deckOf(deckCode).cards.length) openOnLoad = i;
+    }
+  } else {
+    const saved = localStorage.getItem(LS_LANG);
+    if (saved && deckOf(saved) && saved !== base) deckCode = saved;
+  }
+  if (deckCode === base) deckCode = visibleDecks()[0].code;
+
+  renderBaseTabs();
+  renderChips();
+  renderGrid();
+  if (openOnLoad !== null) openCard(openOnLoad);
+})();
+</script>
+</body>
+</html>
