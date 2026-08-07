@@ -6,6 +6,16 @@
 
 A grid of authentic native-language memes — four per language across seven languages, including English, because that's the [Duolingo English Test](https://englishtest.duolingo.com/). Tap a card and it opens big; flip it for the dissection: the translation, why it lands, a cultural note, and the word and grammar bites worth keeping — explained in English or Spanish, whichever you actually speak. The main app builds the habit; this is what the habit is for.
 
+## See it
+
+**The grid** — pick what you speak, pick what you're learning:
+
+[![learnwithmeme home — meme grid across seven languages](docs/lwm-home.png)](https://siddarthnyati.github.io/learnwithmeme)
+
+**The flip** — every card dissects into translation, culture, and the words worth keeping:
+
+[![A card flipped to its dissection — translation, why it lands, vocab chips](docs/lwm-flip.png)](https://siddarthnyati.github.io/learnwithmeme/#es-1)
+
 ## Why this exists
 
 I'm applying for the Senior PM role on the Duolingo English Test, and I wanted to show up with something more honest than a slide deck. Duolingo is world-class at teaching you the language; this is a sketch of the surface that teaches you the people. The product reasoning — insight, principles, content strategy, anti-features, metrics, rollout, risks — is in the [PRD](PRD.md).
